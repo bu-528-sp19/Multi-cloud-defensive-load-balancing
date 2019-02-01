@@ -58,6 +58,14 @@ MVP:
 2) Request load balancing based on heartbeat data
 3) Turning off host instances should not bork the application
 
+Stretch:
+
+1) Distributed DB writes
+2) Distributed reads from any healthy database
+3) Eventually consistency via replication
+4) Turning off databse instances should not bork the application
+5) ANAME Rotation
+
 ## 6.  Release Planning:
 
 Release planning section describes how the project will deliver incremental sets of features and functions in a series of releases to completion. Identification of user stories associated with iterations that will ease/guide sprint planning sessions is encouraged. Higher level details for the first iteration is expected.
