@@ -18,7 +18,7 @@ Project Proposal can be used during the follow-up analysis and design meetings t
 
 ## 1.   Vision and Goals Of The Project:
 
-The vision section describes the final desired state of the project once the project is complete. It also specifies the key goals of the project. This section provides a context for decision-making. A shared vision among all team members can help ensuring that the solution meets the intended goals. A solid vision clarifies perspective and facilitates decision-making.
+Hydra will be a framework for applications in the cloud to mitigate DDoS attacks and provider outages by providing resiliency at multiple levels both intra- and cross-clouds. If parts of AWS or GCP go down, the application itself should be alive and kicking.
 
 ## 2. Users/Personas Of The Project:
 
@@ -28,7 +28,11 @@ This section describes the principal user roles of the project together with the
 
 ## 3.   Scope and Features Of The Project:
 
-The Scope places a boundary around the solution by detailing the range of features and functions of the project. This section helps to clarify the solution scope and can explicitly state what will not be delivered as well.
+- Request-level load balancing and queueing between hosts.
+- Frequent heartbeat monitoring to assess the status of hosts to direct, re-reroute, queue, and cache requests.
+- Distributed writes to all database solutions.
+- Ability to read from any healthy database server.
+- Eventual consistency via replication / multi-read comparisons.
 
 ** **
 
@@ -48,7 +52,11 @@ This section discusses the implications and reasons of the design decisions made
 
 ## 5. Acceptance criteria
 
-This section discusses the minimum acceptance criteria at the end of the project and stretch goals.
+MVP:
+
+1) Host heartbeating for uptime and load monitoring
+2) Request load balancing based on heartbeat data
+3) Turning off host instances should not bork the application
 
 ## 6.  Release Planning:
 
