@@ -22,25 +22,32 @@ Hydra will be a framework for applications in the cloud to mitigate DDoS attacks
 
 ## 2. Users/Personas Of The Project:
 
-This section describes the principal user roles of the project together with the key characteristics of these roles. This information will inform the design and the user scenarios. A complete set of roles helps in ensuring that high-level requirements can be identified in the product backlog.
+1) Application Developers that want a resiliency framework
+
+2) Users of the application that use Hydra that will experience no downtime
 
 ** **
 
 ## 3.   Scope and Features Of The Project:
 
-- Request-level load balancing and queueing between hosts.
-- Frequent heartbeat monitoring to assess the status of hosts to direct, re-reroute, queue, and cache requests.
+- Request-level load balancing and queueing between hosts across clouds.
+- If the compute layer of one cloud provider goes down, the application should still function.
 - Distributed writes to all database solutions.
 - Ability to read from any healthy database server.
-- Eventual consistency via replication / multi-read comparisons.
+- Eventual consistency of newly spawned databases via replication.
+- If the database layer of one cloud provider goes down, the application should still function.
 
 ** **
 
 ## 4. Solution Concept
 
-This section provides a high-level outline of the solution.
-
 Global Architectural Structure Of the Project:
+
+Hydra will provide resiliency at multiple levels.
+
+### Compute
+
+Hydra will feature a request server layer in each cloud 
 
 This section provides a high-level architecture or a conceptual diagram showing the scope of the solution. If wireframes or visuals have already been done, this section could also be used to show how the intended solution will look. This section also provides a walkthrough explanation of the architectural structure.
 
@@ -57,14 +64,17 @@ MVP:
 1) Host heartbeating for uptime and load monitoring
 2) Request load balancing based on heartbeat data
 3) Turning off host instances should not bork the application
+4) DNS failover in the event that the main server goes down
+5) Turning off all compute instances of a Cloud should not kill the application
+6) 1 Request server per Cloud
 
 Stretch:
 
 1) Distributed DB writes
 2) Distributed reads from any healthy database
-3) Eventually consistency via replication
+3) Eventual consistency of new databases via replication and write queuing
 4) Turning off databse instances should not bork the application
-5) ANAME Rotation
+5) Multiple Request servers per Cloud
 
 ## 6.  Release Planning:
 
