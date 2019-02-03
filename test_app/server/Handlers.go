@@ -15,6 +15,15 @@ var cookieHandler = securecookie.New(
  
 // for GET
 func LoginPageHandler(response http.ResponseWriter, request *http.Request) {
+    if cookie, err := request.Cookie("cookie"); err == nil {
+        value := make(map[string]string)
+        if err = cookieHandler.Decode("cookie", cookie.Value, &value); err == nil {
+            if (value["name"] == "ec528") {
+                http.Redirect(response, request, "/index", 302)
+            }
+		}
+    }
+    
     var body, _ = LoadFile("templates/login.html")
     fmt.Fprintf(response, body)
 }
@@ -123,11 +132,7 @@ func GetUserName(request *http.Request) (userName string) {
 }
 
 func IsEmpty(data string) bool {
-    if len(data) <= 0 {
-        return true
-    } else {
-        return false
-    }
+    return len(data) <= 0
 }
 
 func LoadFile(fileName string) (string, error) {
@@ -140,6 +145,7 @@ func LoadFile(fileName string) (string, error) {
 
 func UserIsValid(uName, pwd string) bool {
     // DB simulation
+    // In actual prod, we'd read pwd from the DB
     _uName, _pwd, _isValid := "ec528", "hello", false
  
     if uName == _uName && pwd == _pwd {
