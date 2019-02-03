@@ -15,9 +15,7 @@ var cookieHandler = securecookie.New(
  
 // for GET
 func LoginPageHandler(response http.ResponseWriter, request *http.Request) {
-    fmt.Println("Hello")
     var body, _ = LoadFile("templates/login.html")
-    fmt.Println(body)
     fmt.Fprintf(response, body)
 }
  
@@ -42,7 +40,6 @@ func LoginHandler(response http.ResponseWriter, request *http.Request) {
  
 // for GET
 func RegisterPageHandler(response http.ResponseWriter, request *http.Request) {
-    fmt.Println("Hello Sir")
     var body, _ = LoadFile("templates/register.html")
     fmt.Fprintf(response, body)
 }
@@ -68,7 +65,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
         fmt.Fprintln(w, "Password for Register : ", pwd)
         fmt.Fprintln(w, "ConfirmPassword for Register : ", confirmPwd)
     } else {
-        fmt.Fprintln(w, "This fields can not be blank!")
+        fmt.Fprintln(w, "All fields must be filled in")
     }
 }
  
@@ -143,7 +140,7 @@ func LoadFile(fileName string) (string, error) {
 
 func UserIsValid(uName, pwd string) bool {
     // DB simulation
-    _uName, _pwd, _isValid := "cihanozhan", "1234!*.", false
+    _uName, _pwd, _isValid := "ec528", "hello", false
  
     if uName == _uName && pwd == _pwd {
         _isValid = true
