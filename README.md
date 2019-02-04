@@ -8,9 +8,13 @@ Hydra will be a framework for applications in the cloud to mitigate DDoS attacks
 
 ## 2. Users/Personas Of The Project:
 
-1) Application Developers that want a resiliency framework
+*Hydra targets:*
 
-2) Users of the application that use Hydra that will experience no downtime
+- Software Developers and Ops teams that want a resiliency framework for their applications running on Clouds
+
+*Hydra does not target:*
+
+- End users of adove applications
 
 ** **
 
@@ -22,6 +26,13 @@ Hydra will be a framework for applications in the cloud to mitigate DDoS attacks
 - Ability to read from any healthy database server.
 - Eventual consistency of newly spawned databases via replication.
 - If the database layer of one cloud provider goes down, the application should still function.
+
+*Hydra will not feature:*
+
+- More efficient use of compute resources, as many of the servers will be heartbeating and anycasting between eachother to track uptime and distribute data.
+- Full disaster recovery
+- Database replication strategies
+- Deduplication of data persisted in the DB
 
 ** **
 
@@ -35,44 +46,50 @@ Hydra will feature a request server layer in each cloud that will receive incomi
 
 ### Data 
 
-To use multiple database services across many clouds, Hydra will also feature a distributed database access layer that will ensure consistency across all DBs. Hydra's aim is to ensure consistency and availability (and not necessarily paritioning), so writes will be distributed across all DBs. There will be a database access server (DAS) in all clouds that sits in between the webserver and the database service. Requests to write will pass through the DAS which connects to the DB service and execute the write. All DASs will be connected in this architecture, so write requests that a single DAS receives will be forwarded to every other DAS in the system, so that one write in one system fans out to a write in every system. Similarly, reads will be sourced from any system that is up, optimized for spacial locality. For example, if the AWS side of the system receives a request to read from the DB, and AWS RDS is up, it will simply read from RDS. If RDS is down, however, the AWS DAS will request a read from the GCP DAS and information will be retrieved from CloudSQL and forwarded to AWS.
- 
+To use multiple database services across many clouds, Hydra will also feature a distributed database access layer that will ensure consistency across all DBs. Hydra's aim is to ensure consistency and availability (and not necessarily paritioning), so writes will be distributed across all DBs. There will be a database access server (DAS) in all clouds that sits in between the webserver and the database service. Requests to write will pass through the DAS which connects to the DB service and execute the write. All DASs will be connected in this architecture, so write requests that a single DAS receives will be forwarded to every other DAS in the system, so that one write in one system fans out to a write in every system. Similarly, reads will be sourced from any system that is up, optimized for spacial locality. For example, if the AWS side of the system receives a request to read from the DB, and AWS RDS is up, it will simply read from RDS. If RDS is down, however, the AWS DAS will request a read from the GCP DAS and information will be retrieved from CloudSQL and forwarded to AWS. Any writes during this time will be queued by the AWS DAS for pushing when RDS comes back up. 
 
 Design Implications and Discussion:
 
-This section discusses the implications and reasons of the design decisions made during the global architecture design.
+- Request and Database Access Servers usually don't communicate horizontally, but Hydra necessitates at least one server per cloud in the event that an entire provider goes offline.
+
+- Request and Database Access Servers are constantly in contact with eachother to distribute dataacross clouds and to make decisions based on the status of their peers. This is not more efficient than a single datacenter system, as there will be a compute overhead with constantly checking status and forwarding data. This does, however, lead to great resiliency and fault-tolerance at each layer of each cloud in the system.
+
+- DB writes will be distributed to all Database Access Servers, meaning that each database service should have a full copy of all the data. Per the CAP theorem, Hydra priortizes consistency and availability (naturally, as a resiliency system) over more efficient data storage and retrieval strategies afforded by data paritioning.
+
+- Since Hydra is meant to work on a multi cloud platform, CI/CD for each cloud will need to differ slightly in accordance with each respective API and access structure.
+
 
 ## 5. Acceptance criteria
 
 MVP (not in any particular order):
 
-1) Request load balancing between clouds
-2) Host level load balancing between clouds
-3) Turning off host instances should not crash the application for an extended period of time
-4) DNS failover in the event that the main server goes down
-5) Turning off all compute instances of a Cloud should not kill the application
-6) 1 Request server per Cloud
+1) Basic CRUD web app that, by nature, will exercise DB reads, writes, and possible concurrency issues as a base to apply resiliency strategies to
+2) Request load balancing between clouds
+3) Host level load balancing between clouds
+4) Turning off host instances should not crash the application for an extended period of time
+5) DNS failover in the event that the main server goes down
+6) Turning off all compute instances of a Cloud should not kill the application
+7) 1 Request server per Cloud
+8) Two clouds / at least two isolated systems
 
 Stretch (also not in any particular order):
 
 1) Multiple Request Servers and leadership election
 2) Distributed DB writes
 3) Distributed reads from any healthy database
-4) Eventual consistency of new databases via replication and write queuing
+4) Eventual consistency of new and recovered databases via replication and write queuing
 5) Turning off databse instances should not bork the application
 6) Multiple Request servers per Cloud
+7) More than two clouds
 
 ## 6.  Release Planning:
 
-Release planning section describes how the project will deliver incremental sets of features and functions in a series of releases to completion. Identification of user stories associated with iterations that will ease/guide sprint planning sessions is encouraged. Higher level details for the first iteration is expected.
-
-** **
-
-For more help on markdown, see
-https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet
-
-In particular, you can add images like this (clone the repository to see details):
-
-![alt text](https://github.com/BU-NU-CLOUD-SP18/sample-project/raw/master/cloud.png "Hover text")
-
-
+1) Get a basic web server running on GCP and AWS that can connect to CloudSQL and RDS respectively
+2) Ensure the webapp will have will CRUD functionality as described by the mentor (garage reservation system with users and cars)
+3) Separate the front end to be served by a CDN
+4) Extract the request handling to Request Servers that will load balance requests to the webserver(s) and track their statuses (per cloud)
+5) Create a DNS name for the primary request server and route CDN traffic to it
+6) Connect the Request Servers together and implement cross-cloud load balancing and health checks
+7) Implement DNS failover on the secondary Request Server to redirect DNS servers to it instead
+8) Extract the database access layer into a separate Database Access Server
+9) Connect Database Access Serveers together and implement distributed reads and writes
