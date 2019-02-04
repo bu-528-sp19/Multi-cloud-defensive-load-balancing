@@ -2,6 +2,7 @@ Using Docker
 
 To build the docker image:
 docker build -t garage .
+//Note: the docker build command looks for a Dockerfile, so the Dockerfile must be in the working directory.
 
 To run container:
 docker run -p 8888:8888 garage
