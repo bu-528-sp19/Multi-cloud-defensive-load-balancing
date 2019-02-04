@@ -40,6 +40,8 @@ Hydra will be a framework for applications in the cloud to mitigate DDoS attacks
 
 ## 4. Solution Concept
 
+<img align="left" width="800" height="500" src="https://raw.githubusercontent.com/bu-528-sp19/Multi-cloud-defensive-load-balancing/jstern-dev/528Architecture.PNG"><br/>
+
 Hydra will provide resiliency at multiple levels.
 
 ### Compute
