@@ -1,10 +1,10 @@
-#                           Cloud Hydra: A Multi-Cloud Load Balancing and Failover framework
+#                           Cloud Hydra: A Multi-Cloud Load Balancing and Failover Framework
 
 ** **
 
 ## 1.   Vision and Goals Of The Project:
 
-Hydra will be a framework for applications in the cloud to mitigate DDoS attacks and provider outages by providing resiliency at multiple levels both intra- and inter-clouds. If parts of AWS or GCP go down, for example, the application itself should be alive and kicking, as resources will be directed to the provider that is still up.
+Hydra will be a framework for applications in the cloud to mitigate DDoS attacks and provider outages by providing resiliency at multiple levels both intra- and inter-clouds. Intra-cloud resiliency is a topic that has been studied and practiced in depth, making it possible for pieces of applications to migrate from one server to another. Intra-cloud reliability platforms, however, are not nearly as common. We seek to include this in order to protect applications from several issues ranging from cyber attacks to hardware failures. For example, if parts of AWS or GCP go down, for example, the application itself should be alive and kicking, as resources will be directed to the provider that is still up. We seek to implement load balancing at both the intra- and inter-cloud levels so that all requests are serviced, as well as duplicate data throughout different cloud providers in order to ensure that application users always have access to their current data. We will test our framework with our own application by running it on multiple cloud providers and testing its reliability when different cloud instances are turned off.
 
 ## 2. Users/Personas Of The Project:
 
@@ -15,6 +15,7 @@ Hydra will be a framework for applications in the cloud to mitigate DDoS attacks
 *Hydra does not target:*
 
 - End users of above applications
+- Cloud Administrators
 
 ** **
 
@@ -62,6 +63,7 @@ Design Implications and Discussion:
 
 - Since Hydra is meant to work on a multi cloud platform, CI/CD for each cloud will need to differ slightly in accordance with each respective API and access structure.
 
+** **
 
 ## 5. Acceptance criteria
 
@@ -85,6 +87,8 @@ Stretch (also not in any particular order):
 5) Turning off database instances should not break the application
 6) Multiple Request servers per Cloud
 7) More than two clouds
+
+** **
 
 ## 6.  Release Planning:
 
