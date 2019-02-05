@@ -108,4 +108,4 @@ Product Backlog:
 * Connect the Request Servers together and implement cross-cloud load balancing and health checks
 * Implement DNS failover on the secondary Request Server to redirect DNS servers to it instead
 * Extract the database access layer into a separate Database Access Server
-* Connect Database Access Serveers together and implement distributed reads and writes
+* Connect Database Access Servers together and implement distributed reads and writes
