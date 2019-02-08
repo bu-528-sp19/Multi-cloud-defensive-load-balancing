@@ -388,6 +388,28 @@ func getGarage(garageID int) (Garage) {
 	return Garage{}
 }
 
+func getCars() ([]Car) {
+	db := dbLogin()
+	defer db.Close()
+
+	rows, err := db.Query(
+		"SELECT * FROM cars")
+
+	var cars []Car
+	for rows.Next() {
+		var id int
+		var user_id int
+		var model string
+
+		err = rows.Scan(&id, &user_id, &model)
+		if err != nil {
+			pnaic(err)
+		}
+		cars = append(cars, Car{ID: id, Model: model, UserID: user_id})
+	}
+	return cars
+}
+
 func getCarsForUser(userID int) ([]Car) {
 	db := dbLogin()
 	defer db.Close()

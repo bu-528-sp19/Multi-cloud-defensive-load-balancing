@@ -32,7 +32,7 @@ func main() {
 	router.HandleFunc("/reservations", CreateReservation).Methods("POST")
 	//router.HandleFunc("/reservations/{id}", UpdateReservation).Methods("PUT")
 	router.HandleFunc("/reservations/{id}", DeleteReservation).Methods("DELETE")
-	router.HandleFunc("/reservationsByUser/{id}", GetReservationsByUser).Methods("POST")
+	router.HandleFunc("/reservations-by-user/{id}", GetReservationsByUser).Methods("GET")
 
 	// Users route handles & endpoints
 	router.HandleFunc("/users", GetUsers).Methods("GET")
