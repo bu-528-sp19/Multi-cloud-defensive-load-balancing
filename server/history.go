@@ -6,8 +6,8 @@ import (
 )
 
 type History struct {
-	ID            string `json:"ID"`
-	ReservationID string `json:"ReservationID"`
+	ID            int `json:"ID"`
+	ReservationID int `json:"ReservationID"`
 }
 
 var history []History
