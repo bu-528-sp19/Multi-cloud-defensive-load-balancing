@@ -18,6 +18,7 @@ type Reservation struct {
 var reservations []Reservation
 
 func GetReservation(w http.ResponseWriter, req *http.Request) {
+	(w).Header().Set("Access-Control-Allow-Origin", "*")
 	params := mux.Vars(req)
 	id, _ := strconv.Atoi(params["id"])
 	reservation := getReservation(id)
@@ -32,9 +33,11 @@ func GetReservation(w http.ResponseWriter, req *http.Request) {
 
 func GetReservations(w http.ResponseWriter, req *http.Request) {
 	json.NewEncoder(w).Encode(reservations)
+	(w).Header().Set("Access-Control-Allow-Origin", "*")
 }
 
 func GetReservationsByUser(w http.ResponseWriter, req *http.Request) {
+	(w).Header().Set("Access-Control-Allow-Origin", "*")
 	params := mux.Vars(req)
 	id, _ := strconv.Atoi(params["id"])
 	reservations := getReservationsForUser(id)
@@ -43,13 +46,15 @@ func GetReservationsByUser(w http.ResponseWriter, req *http.Request) {
 
 
 func CreateReservation(w http.ResponseWriter, req *http.Request) {
+	(w).Header().Set("Access-Control-Allow-Origin", "*")
 	var reservation Reservation
 	_ = json.NewDecoder(req.Body).Decode(&reservation)
-	createReservation(reservation)
-	json.NewEncoder(w).Encode(reservations)
+	reservation = createReservation(reservation)
+	json.NewEncoder(w).Encode(reservation)
 }
 
 func DeleteReservation(w http.ResponseWriter, req *http.Request) {
+	(w).Header().Set("Access-Control-Allow-Origin", "*")
 	params := mux.Vars(req)
 	id, _ := strconv.Atoi(params["id"])
 	deleteReservation(id)
