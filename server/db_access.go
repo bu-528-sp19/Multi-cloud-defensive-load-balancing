@@ -403,7 +403,7 @@ func getCars() ([]Car) {
 
 		err = rows.Scan(&id, &user_id, &model)
 		if err != nil {
-			pnaic(err)
+			panic(err)
 		}
 		cars = append(cars, Car{ID: id, Model: model, UserID: user_id})
 	}
