@@ -34,6 +34,14 @@ func GetReservations(w http.ResponseWriter, req *http.Request) {
 	json.NewEncoder(w).Encode(reservations)
 }
 
+func GetReservationsByUser(w http.ResponseWriter, req *http.Request) {
+	params := mux.Vars(req)
+	id, _ := strconv.Atoi(params["id"])
+	reservations := getReservationsForUser(id)
+	json.NewEncoder(w).Encode(reservations)
+}
+
+
 func CreateReservation(w http.ResponseWriter, req *http.Request) {
 	var reservation Reservation
 	_ = json.NewDecoder(req.Body).Decode(&reservation)

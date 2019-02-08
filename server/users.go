@@ -17,6 +17,7 @@ type User struct {
 var users []User
 
 func GetUser(w http.ResponseWriter, req *http.Request) {
+	(w).Header().Set("Access-Control-Allow-Origin", "*")
 	params := mux.Vars(req)
 	id, _ := strconv.Atoi(params["id"])
 	user := getUserById(id)

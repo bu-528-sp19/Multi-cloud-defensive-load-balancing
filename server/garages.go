@@ -28,6 +28,8 @@ func GetGarage(w http.ResponseWriter, req *http.Request) {
 }
 
 func GetGarages(w http.ResponseWriter, req *http.Request) {
+	(w).Header().Set("Access-Control-Allow-Origin", "*")
+	garages := getGarages()
 	json.NewEncoder(w).Encode(garages)
 }
 
