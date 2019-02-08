@@ -29,6 +29,7 @@ func main() {
 	router.HandleFunc("/reservations/", GetReservations).Methods("GET")
 	router.HandleFunc("/reservations/{id}", GetReservation).Methods("GET")
 	router.HandleFunc("/reservations/", CreateReservation).Methods("POST")
+	router.HandleFunc("/reservations", CreateReservation).Methods("POST")
 	//router.HandleFunc("/reservations/{id}", UpdateReservation).Methods("PUT")
 	router.HandleFunc("/reservations/{id}", DeleteReservation).Methods("DELETE")
 	router.HandleFunc("/reservationsByUser/{id}", GetReservationsByUser).Methods("POST")
@@ -38,6 +39,7 @@ func main() {
 	router.HandleFunc("/users/", GetUsers).Methods("GET")
 	router.HandleFunc("/users/{id}", GetUser).Methods("GET")
 	router.HandleFunc("/users", CreateUser).Methods("POST")
+	router.HandleFunc("/users/", CreateUser).Methods("POST")
 	//router.HandleFunc("/users/{id}", UpdateUser).Methods("PUT")
 	router.HandleFunc("/users/{id}", DeleteUser).Methods("DELETE")
 
@@ -46,6 +48,7 @@ func main() {
 	router.HandleFunc("/garages/", GetGarages).Methods("GET")
 	router.HandleFunc("/garages/{id}", GetGarage).Methods("GET")
 	router.HandleFunc("/garages/", CreateGarage).Methods("POST")
+	router.HandleFunc("/garages", CreateGarage).Methods("POST")
 	//router.HandleFunc("/garages/{id}", UpdateGarage).Methods("PUT")
 	router.HandleFunc("/garages/{id}", DeleteGarage).Methods("DELETE")
 
@@ -53,6 +56,7 @@ func main() {
 	router.HandleFunc("/cars", GetCars).Methods("GET")
 	router.HandleFunc("/cars/", GetCars).Methods("GET")
 	router.HandleFunc("/cars/{id}", GetCar).Methods("GET")
+	router.HandleFunc("/cars", CreateCar).Methods("POST")
 	router.HandleFunc("/cars", CreateCar).Methods("POST")
 	//router.HandleFunc("/cars/{id}", UpdateCar).Methods("PUT")
 	router.HandleFunc("/cars/{id}", DeleteCar).Methods("DELETE")

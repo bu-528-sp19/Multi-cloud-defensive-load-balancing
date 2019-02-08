@@ -18,27 +18,32 @@ var cars []Car
 
 func GetCar(w http.ResponseWriter, req *http.Request) {
 	params := mux.Vars(req)
+	(w).Header().Set("Access-Control-Allow-Origin", "*")
 	id, _ := strconv.Atoi(params["id"])
 
 	car := getCar(id)
 	if car.ID == id {
 		json.NewEncoder(w).Encode(car)
+		return
 	}
 	json.NewEncoder(w).Encode(&Car{})
 }
 
 func GetCars(w http.ResponseWriter, req *http.Request) {
 	json.NewEncoder(w).Encode(cars)
+	(w).Header().Set("Access-Control-Allow-Origin", "*")
 }
 
 func CreateCar(w http.ResponseWriter, req *http.Request) {
 	var car Car
+	(w).Header().Set("Access-Control-Allow-Origin", "*")
 	_ = json.NewDecoder(req.Body).Decode(&car)
-	cars = append(cars, car)
-	json.NewEncoder(w).Encode(cars)
+	car = createCar(car)
+	json.NewEncoder(w).Encode(car)
 }
 
 func DeleteCar(w http.ResponseWriter, req *http.Request) {
+	(w).Header().Set("Access-Control-Allow-Origin", "*")
 	params := mux.Vars(req)
 	id, _ := strconv.Atoi(params["id"])
 	deleteCar(id)

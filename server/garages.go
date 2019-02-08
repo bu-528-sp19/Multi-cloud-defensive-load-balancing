@@ -17,6 +17,7 @@ var garages []Garage
 
 func GetGarage(w http.ResponseWriter, req *http.Request) {
 	params := mux.Vars(req)
+	(w).Header().Set("Access-Control-Allow-Origin", "*")
 	id, _ := strconv.Atoi(params["id"])
 	garage := getGarage(id)
 
@@ -33,7 +34,8 @@ func GetGarages(w http.ResponseWriter, req *http.Request) {
 	json.NewEncoder(w).Encode(garages)
 }
 
-func CreateGarage(w http.ResponseWriter, req *http.Request) {
+func CreateGarage(w http.ResponseWriter, req *http.Request) {	
+	(w).Header().Set("Access-Control-Allow-Origin", "*")
 	var garage Garage
 	_ = json.NewDecoder(req.Body).Decode(&garage)
 	createGarage(garage)
@@ -42,6 +44,7 @@ func CreateGarage(w http.ResponseWriter, req *http.Request) {
 
 func DeleteGarage(w http.ResponseWriter, req *http.Request) {
 	params := mux.Vars(req)
+	(w).Header().Set("Access-Control-Allow-Origin", "*")
 	id, _ := strconv.Atoi(params["id"])
 	deleteGarage(id)
 }
