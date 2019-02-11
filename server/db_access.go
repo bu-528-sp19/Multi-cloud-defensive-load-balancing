@@ -1,19 +1,20 @@
 package main
 
 import (
-  "database/sql"
-  "fmt"
-  "encoding/json"
-  "io/ioutil"
-  _ "github.com/lib/pq"
+	"database/sql"
+	"fmt"
+	"os"
+	"strconv"
+
+	_ "github.com/lib/pq"
 )
 
 type DatabaseInfo struct {
-	Host string
-	User string
+	Host     string
+	User     string
 	Password string
-	Name string
-	Port int
+	Name     string
+	Port     int
 }
 
 /*func main() {
@@ -85,17 +86,15 @@ func testSelect() {
 	}
 }
 
-func dbLogin() (*sql.DB) {
-	var dbInfo DatabaseInfo
-	dbCredentials, _ := ioutil.ReadFile("db_secrets_gcp.json")
-	json.Unmarshal(dbCredentials, &dbInfo)
+func dbLogin() *sql.DB {
+	port, _ := strconv.Atoi(os.Getenv("PORT"))
 	psqlInfo := fmt.Sprintf(
 		"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-		dbInfo.Host,
-		dbInfo.Port,
-		dbInfo.User,
-		dbInfo.Password,
-		dbInfo.Name)
+		os.Getenv("HOST"),
+		port,
+		os.Getenv("USER"),
+		os.Getenv("PASSWORD"),
+		os.Getenv("NAME"))
 	db, err := sql.Open("postgres", psqlInfo)
 
 	if err != nil {
