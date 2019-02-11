@@ -9,11 +9,11 @@ import (
 )
 
 type DatabaseInfo struct {
-	Host string
-	User string
+	Host     string
+	User     string
 	Password string
-	Name string
-	Port int
+	Name     string
+	Port     int
 }
 
 /*func main() {
