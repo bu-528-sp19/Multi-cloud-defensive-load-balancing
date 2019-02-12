@@ -32,7 +32,6 @@ func GetReservation(w http.ResponseWriter, req *http.Request) {
 }
 
 func GetReservations(w http.ResponseWriter, req *http.Request) {
-	json.NewEncoder(w).Encode(reservations)
 	(w).Header().Set("Access-Control-Allow-Origin", "*")
 	reservations := getReservations()
 	json.NewEncoder(w).Encode(reservations)

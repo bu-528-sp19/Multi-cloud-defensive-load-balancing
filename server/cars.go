@@ -37,7 +37,6 @@ func GetCars(w http.ResponseWriter, req *http.Request) {
 
 func GetCarsByUser(w http.ResponseWriter, req *http.Request) {
 	params := mux.Vars(req)
-	json.NewEncoder(w).Encode(cars)
 	(w).Header().Set("Access-Control-Allow-Origin", "*")
 	id, _ := strconv.Atoi(params["id"])
 
