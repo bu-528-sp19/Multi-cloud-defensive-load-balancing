@@ -1,12 +1,11 @@
 package main
 
 import (
-	"database/sql"
-	"fmt"
-	"os"
-	"strconv"
-
-	_ "github.com/lib/pq"
+  "database/sql"
+  "fmt"
+  "os"
+  "strconv"
+  _ "github.com/lib/pq"
 )
 
 type DatabaseInfo struct {
@@ -86,7 +85,7 @@ func testSelect() {
 	}
 }
 
-func dbLogin() *sql.DB {
+func dbLogin() (*sql.DB) {
 	port, _ := strconv.Atoi(os.Getenv("PORT"))
 	psqlInfo := fmt.Sprintf(
 		"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",

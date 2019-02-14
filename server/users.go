@@ -31,6 +31,7 @@ func GetUser(w http.ResponseWriter, req *http.Request) {
 
 func GetUsers(w http.ResponseWriter, req *http.Request) {
 	(w).Header().Set("Access-Control-Allow-Origin", "*")
+	users := getUsers()
 	json.NewEncoder(w).Encode(users)
 }
 

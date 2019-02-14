@@ -30,8 +30,23 @@ func GetCar(w http.ResponseWriter, req *http.Request) {
 }
 
 func GetCars(w http.ResponseWriter, req *http.Request) {
-	json.NewEncoder(w).Encode(cars)
 	(w).Header().Set("Access-Control-Allow-Origin", "*")
+	cars := getCars()
+	json.NewEncoder(w).Encode(cars)
+}
+
+func GetCarsByUser(w http.ResponseWriter, req *http.Request) {
+	params := mux.Vars(req)
+	json.NewEncoder(w).Encode(cars)
+}
+
+func GetCarsByUser(w http.ResponseWriter, req *http.Request) {
+	params := mux.Vars(req)
+	(w).Header().Set("Access-Control-Allow-Origin", "*")
+	id, _ := strconv.Atoi(params["id"])
+
+	cars := getCarsForUser(id)
+	json.NewEncoder(w).Encode(cars)
 }
 
 func CreateCar(w http.ResponseWriter, req *http.Request) {
