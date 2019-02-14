@@ -3,3 +3,5 @@
 !*.*
 *secret*
 server/.DS_Store
+app/.DS_Store
+feserver/app/.DS_Store
