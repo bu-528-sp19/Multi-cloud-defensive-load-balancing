@@ -58,6 +58,7 @@ func main() {
 	router.HandleFunc("/cars/{id}", GetCar).Methods("GET")
 	router.HandleFunc("/cars", CreateCar).Methods("POST")
 	router.HandleFunc("/cars", CreateCar).Methods("POST")
+	router.HandleFunc("/get-cars-by-user/{id}", GetCarsByUser).Methods("GET")
 	//router.HandleFunc("/cars/{id}", UpdateCar).Methods("PUT")
 	router.HandleFunc("/cars/{id}", DeleteCar).Methods("DELETE")
 
