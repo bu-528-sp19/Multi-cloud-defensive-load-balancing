@@ -46,7 +46,7 @@ func getCarsForUser(userID int) ([]Car) {
 			panic(err)
 		}
 
-		userCars = append(userCars, Car{ID: id, Model: model})
+		userCars = append(userCars, Car{ID: id, Model: model, UserID: user_id})
 	}
 	return userCars
 }
@@ -71,6 +71,27 @@ func getCar(carID int) (Car) {
 		return Car{ID: id, UserID: user_id, Model: model}
 	}
 	return Car{}
+}
+
+func getCars() ([]Car) {
+	db := dbLogin()
+	defer db.Close()
+
+	rows, err := db.Query("SELECT * FROM cars")
+
+	var allCars []Car
+	for rows.Next() {
+		var id int
+		var user_id int
+		var model string
+
+		err = rows.Scan(&id, &user_id, &model)
+		if err != nil {
+			panic(err)
+		}
+		allCars = append(allCars, Car{ID: id, UserID: user_id, Model: model})
+	}
+	return allCars
 }
 
 func deleteCar(carID int) {

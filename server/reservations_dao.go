@@ -1,4 +1,4 @@
-package main 
+package main
 
 import "time"
 
@@ -118,6 +118,32 @@ func getReservationForCar(carID int) (Reservation) {
 		return Reservation{ID: id, StartTime: start, EndTime: end, CarID: carID, GarageID: garageID}
 	}
 	return Reservation{}
+}
+
+func getReservations() ([]Reservation) {
+	db := dbLogin()
+	defer db.Close()
+
+	rows, err := db.Query("SELECT * FROM reservations")
+
+	var reservations []Reservation
+	for rows.Next() {
+		var id int
+		var start string
+		var end string
+		var carID int
+		var garageID int
+
+		err = rows.Scan(&id, &start, &end, &carID, &garageID)
+		if err != nil {
+			panic(err)
+		}
+
+		reservations = append(reservations,
+			Reservation{ID: id, StartTime: start, EndTime: end, CarID: carID, GarageID: garageID})
+	}
+
+	return reservations
 }
 
 func getReservation(reservationID int) (Reservation) {

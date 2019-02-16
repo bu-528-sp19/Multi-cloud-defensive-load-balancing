@@ -53,6 +53,29 @@ func getUserById(userID int) (User) {
 	return User{}
 }
 
+func getUsers() ([]User) {
+	db := dbLogin()
+	defer db.Close()
+
+	rows, err := db.Query("SELECT * FROM users")
+
+	var users []User
+	for rows.Next() {
+		var id int
+		var db_username string
+		var password string
+		var email string
+
+		err = rows.Scan(&id, &db_username, &password, &email)
+		if err != nil {
+			panic (err)
+		}
+		users = append(users,
+			User{ID: id, Username: db_username, Email: email})
+	}
+	return users
+}
+
 func getUser(username string, password string) (User) {
 	db := dbLogin()
 	defer db.Close()
