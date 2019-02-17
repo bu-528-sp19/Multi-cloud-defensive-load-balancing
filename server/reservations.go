@@ -1,4 +1,4 @@
-package main
+ckage main
 
 import (
 	"encoding/json"
