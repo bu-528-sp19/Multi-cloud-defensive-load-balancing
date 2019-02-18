@@ -1,9 +1,10 @@
-ckage main
+package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"net/http"
-	"strconv"
+	"io/ioutil"
 	"github.com/gorilla/mux"
 )
 
@@ -15,33 +16,68 @@ type Reservation struct {
 	GarageID  int `json:"GarageID"`
 }
 
-var reservations []Reservation
+const RESERVATIONS_ROUTE string = "reservations/"
 
 func GetReservation(w http.ResponseWriter, req *http.Request) {
-	(w).Header().Set("Access-Control-Allow-Origin", "*")
 	params := mux.Vars(req)
-	id, _ := strconv.Atoi(params["id"])
-	reservation := getReservation(id)
+	(w).Header().Set("Access-Control-Allow-Origin", "*")
 
-	if reservation.ID == id {
-		json.NewEncoder(w).Encode(reservation)
-		return
+	reservation := Reservation{}
+	id := params["id"]
+	url := IP_ADDRESS + RESERVATIONS_ROUTE + id
+	response, err := http.Get(url)
+
+	defer response.Body.Close()
+	contents, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		panic(err)
 	}
-
-	json.NewEncoder(w).Encode(&Reservation{})
+	error := json.Unmarshal(contents, &reservation)
+	if error != nil {
+		panic(error)
+	}
+	json.NewEncoder(w).Encode(reservation)
 }
 
 func GetReservations(w http.ResponseWriter, req *http.Request) {
 	(w).Header().Set("Access-Control-Allow-Origin", "*")
-	reservations := getReservations()
+
+	reservations := []Reservation{}
+	url := IP_ADDRESS + RESERVATIONS_ROUTE
+	response, err := http.Get(url)
+
+	defer response.Body.Close()
+	contents, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		panic(err)
+	}
+	error := json.Unmarshal(contents, &reservations)
+	if error != nil {
+		panic(err)
+	}
+
 	json.NewEncoder(w).Encode(reservations)
 }
 
 func GetReservationsByUser(w http.ResponseWriter, req *http.Request) {
-	(w).Header().Set("Access-Control-Allow-Origin", "*")
 	params := mux.Vars(req)
-	id, _ := strconv.Atoi(params["id"])
-	reservations := getReservationsForUser(id)
+	(w).Header().Set("Access-Control-Allow-Origin", "*")
+
+	reservations := []Reservation{}
+	id := params["id"]
+	url := IP_ADDRESS + "reservations-by-user/" + id
+	response, err := http.Get(url)
+
+	defer response.Body.Close()
+	contents, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		panic(err)
+	}
+	error := json.Unmarshal(contents, &reservations)
+	if error != nil {
+		panic(err)
+	}
+
 	json.NewEncoder(w).Encode(reservations)
 }
 
@@ -49,16 +85,36 @@ func GetReservationsByUser(w http.ResponseWriter, req *http.Request) {
 func CreateReservation(w http.ResponseWriter, req *http.Request) {
 	(w).Header().Set("Access-Control-Allow-Origin", "*")
 	var reservation Reservation
-	_ = json.NewDecoder(req.Body).Decode(&reservation)
-	reservation = createReservation(reservation)
+    _ = json.NewDecoder(req.Body).Decode(&reservation)
+
+	url := IP_ADDRESS + RESERVATIONS_ROUTE
+	jsonStr, _ := json.Marshal(reservation)
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
+	// req.Header.Set("X-Custom-Header", "myvalue")
+	// req.Header.Set("Content-Type", "application/json")
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+	//body, _ := ioutil.ReadAll(resp.Body)
+	_ = json.NewDecoder(resp.Body).Decode(&reservation)
 	json.NewEncoder(w).Encode(reservation)
 }
 
 func DeleteReservation(w http.ResponseWriter, req *http.Request) {
-	(w).Header().Set("Access-Control-Allow-Origin", "*")
 	params := mux.Vars(req)
-	id, _ := strconv.Atoi(params["id"])
-	deleteReservation(id)
+	(w).Header().Set("Access-Control-Allow-Origin", "*")
+
+	id := params["id"]
+	url := IP_ADDRESS + RESERVATIONS_ROUTE + id
+	response, err := http.NewRequest("DELETE", url, nil)
+	defer response.Body.Close()
+
+	if err != nil {
+		panic(err)
+	}
 }
 
 /*func UpdateReservation(w http.ResponseWriter, r *http.Request) {
