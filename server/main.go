@@ -3,10 +3,10 @@ package main
 import (
 	"log"
 	"net/http"
-
+	"os"
 	"github.com/gorilla/mux"
 )
-
+var IP_ADDRESS string = os.Getenv("IP")
 //Use "go run *.go" to run the program
 // Main function
 func main() {

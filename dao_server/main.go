@@ -66,5 +66,5 @@ func main() {
 	router.HandleFunc("/history/", GetHistory).Methods("GET")
 
 	// Start server
-	log.Fatal(http.ListenAndServe(":8080", router))
+	log.Fatal(http.ListenAndServe(":8888", router))
 }

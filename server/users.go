@@ -1,9 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"net/http"
-	"strconv"
+	"io/ioutil"
 	"github.com/gorilla/mux"
 )
 
@@ -14,42 +15,79 @@ type User struct {
 	Password string `json:"Password"`
 }
 
-var users []User
+const USERS_ROUTE string = "users/"
 
 func GetUser(w http.ResponseWriter, req *http.Request) {
-	(w).Header().Set("Access-Control-Allow-Origin", "*")
 	params := mux.Vars(req)
-	id, _ := strconv.Atoi(params["id"])
-	user := getUserById(id)
+	(w).Header().Set("Access-Control-Allow-Origin", "*")
 
-	if user.ID == id {
-		json.NewEncoder(w).Encode(user)
-		return
+	user := User{}
+	id := params["id"]
+	url := IP_ADDRESS + USERS_ROUTE + id
+	response, err := http.Get(url)
+
+	defer response.Body.Close()
+	contents, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		panic(err)
 	}
-	json.NewEncoder(w).Encode(&User{})
+	error := json.Unmarshal(contents, &user)
+	if error != nil {
+		panic(error)
+	}
+	json.NewEncoder(w).Encode(user)
 }
 
 func GetUsers(w http.ResponseWriter, req *http.Request) {
 	(w).Header().Set("Access-Control-Allow-Origin", "*")
-	users := getUsers()
+
+	users := []User{}
+	url := IP_ADDRESS + USERS_ROUTE
+	response, err := http.Get(url)
+
+	defer response.Body.Close()
+	contents, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		panic(err)
+	}
+	error := json.Unmarshal(contents, &users)
+	if error != nil {
+		panic(error)
+	}
+
 	json.NewEncoder(w).Encode(users)
 }
 
 func CreateUser(w http.ResponseWriter, req *http.Request) {
 	(w).Header().Set("Access-Control-Allow-Origin", "*")
 	var user User
-	_ = json.NewDecoder(req.Body).Decode(&user)
-	user = createUser(user)
+    _ = json.NewDecoder(req.Body).Decode(&user)
+
+	url := IP_ADDRESS + USERS_ROUTE
+	jsonStr, _ := json.Marshal(user)
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+	_ = json.NewDecoder(resp.Body).Decode(&user)
 	json.NewEncoder(w).Encode(user)
 }
 
 func DeleteUser(w http.ResponseWriter, req *http.Request) {
-	(w).Header().Set("Access-Control-Allow-Origin", "*")
 	params := mux.Vars(req)
-	id, _ := strconv.Atoi(params["id"])
-	deleteUser(id)
+	(w).Header().Set("Access-Control-Allow-Origin", "*")
 
-	json.NewEncoder(w).Encode(users)
+	id := params["id"]
+	url := IP_ADDRESS + USERS_ROUTE + id
+	response, err := http.NewRequest("DELETE", url, nil)
+	defer response.Body.Close()
+
+	if err != nil {
+		panic(err)
+	}
 }
 
 /*func UpdateUser(w http.ResponseWriter, r *http.Request) {
