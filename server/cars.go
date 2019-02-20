@@ -1,10 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"net/http"
-	"strconv"
-
 	"github.com/gorilla/mux"
 )
 
@@ -14,49 +15,105 @@ type Car struct {
 	Model  string `json:"Model"`
 }
 
-var cars []Car
+const CARS_ROUTE string = "cars/"
 
 func GetCar(w http.ResponseWriter, req *http.Request) {
 	params := mux.Vars(req)
 	(w).Header().Set("Access-Control-Allow-Origin", "*")
-	id, _ := strconv.Atoi(params["id"])
 
-	car := getCar(id)
-	if car.ID == id {
-		json.NewEncoder(w).Encode(car)
-		return
+	car := Car{}
+	id := params["id"]
+	url := IP_ADDRESS + CARS_ROUTE + id
+	response, err := http.Get(url)
+
+	defer response.Body.Close()
+	contents, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		panic(err)
 	}
-	json.NewEncoder(w).Encode(&Car{})
+	error := json.Unmarshal(contents, &car)
+	if error != nil {
+		panic(error)
+	}
+	json.NewEncoder(w).Encode(car)
 }
 
 func GetCars(w http.ResponseWriter, req *http.Request) {
 	(w).Header().Set("Access-Control-Allow-Origin", "*")
-	cars := getCars()
+
+	cars := []Car{}
+	url := IP_ADDRESS + CARS_ROUTE
+	response, err := http.Get(url)
+
+	defer response.Body.Close()
+	contents, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		panic(err)
+	}
+	error := json.Unmarshal(contents, &cars)
+	if error != nil {
+		panic(error)
+	}
+
 	json.NewEncoder(w).Encode(cars)
 }
 
 func GetCarsByUser(w http.ResponseWriter, req *http.Request) {
 	params := mux.Vars(req)
 	(w).Header().Set("Access-Control-Allow-Origin", "*")
-	id, _ := strconv.Atoi(params["id"])
+	id := params["id"]
 
-	cars := getCarsForUser(id)
+	cars := []Car{}
+	url := IP_ADDRESS + "get-cars-by-user/" + id
+	response, err := http.Get(url)
+
+	defer response.Body.Close()
+	contents, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		fmt.Printf("%s", err)
+		panic(err)
+	}
+	error := json.Unmarshal(contents, &cars)
+	if error != nil {
+		fmt.Printf("%s", error)
+		panic(error)
+	}
 	json.NewEncoder(w).Encode(cars)
 }
 
 func CreateCar(w http.ResponseWriter, req *http.Request) {
-	var car Car
 	(w).Header().Set("Access-Control-Allow-Origin", "*")
-	_ = json.NewDecoder(req.Body).Decode(&car)
-	car = createCar(car)
+	var car Car
+    _ = json.NewDecoder(req.Body).Decode(&car)
+
+	url := IP_ADDRESS + CARS_ROUTE
+	jsonStr, _ := json.Marshal(car)
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
+	// req.Header.Set("X-Custom-Header", "myvalue")
+	// req.Header.Set("Content-Type", "application/json")
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+	//body, _ := ioutil.ReadAll(resp.Body)
+	_ = json.NewDecoder(resp.Body).Decode(&car)
 	json.NewEncoder(w).Encode(car)
 }
 
 func DeleteCar(w http.ResponseWriter, req *http.Request) {
-	(w).Header().Set("Access-Control-Allow-Origin", "*")
 	params := mux.Vars(req)
-	id, _ := strconv.Atoi(params["id"])
-	deleteCar(id)
+	(w).Header().Set("Access-Control-Allow-Origin", "*")
+
+	id := params["id"]
+	url := IP_ADDRESS + CARS_ROUTE + id
+	response, err := http.NewRequest("DELETE", url, nil)
+	defer response.Body.Close()
+
+	if err != nil {
+		panic(err)
+	}
 }
 
 /*func UpdateCar(w http.ResponseWriter, r *http.Request) {
