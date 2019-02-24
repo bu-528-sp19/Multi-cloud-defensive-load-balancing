@@ -84,14 +84,14 @@ func testSelect() {
 }
 
 func dbLogin() (*sql.DB) {
-	//port, _ := strconv.Atoi(os.Getenv("PORT"))
+	port, _ := strconv.Atoi(os.Getenv("PORT"))
 	psqlInfo := fmt.Sprintf(
 		"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-		"postgres.cefcqioy9fiv.us-east-1.rds.amazonaws.com",
-		5432,
-		"postgres",
-		"ec528!!!",
-		"postgres")
+		os.Getenv("HOST"),
+		port,
+		os.Getenv("USER"),
+		os.Getenv("PASSWORD"),
+		os.Getenv("NAME"))
 	db, err := sql.Open("postgres", psqlInfo)
 
 	if err != nil {
