@@ -1,10 +1,12 @@
-#                           Cloud Hydra: A Multi-Cloud Load Balancing and Failover framework
+#                           Cloud Hydra: A Multi-Cloud Load Balancing and Failover Framework
 
 ** **
 
 ## 1.   Vision and Goals Of The Project:
 
-Hydra will be a framework for applications in the cloud to mitigate DDoS attacks and provider outages by providing resiliency at multiple levels both intra- and inter-clouds. If parts of AWS or GCP go down, for example, the application itself should be alive and kicking, as resources will be directed to the provider that is still up.
+ Hydra will be a framework for applications in the cloud to mitigate DDoS attacks and provider outages by providing resiliency at multiple levels both intra- and inter-clouds. Intra-cloud resiliency is a topic that has been studied and practiced in depth, making it possible for pieces of applications to migrate from one server to another. Intra-cloud reliability platforms, however, are not nearly as common. We seek to include this in order to protect applications from several issues ranging from cyber attacks to hardware failures. For example, if parts of AWS or GCP go down, for example, the application itself should be alive and kicking, as resources will be directed to the provider that is still up. We seek to implement load balancing at both the intra- and inter-cloud levels so that all requests are serviced, as well as duplicate data throughout different cloud providers in order to ensure that application users always have access to their current data. We will test our framework with our own application by running it on multiple cloud providers and testing its reliability when different cloud instances are turned off.
+
+** **
 
 ## 2. Users/Personas Of The Project:
 
@@ -15,6 +17,7 @@ Hydra will be a framework for applications in the cloud to mitigate DDoS attacks
 *Hydra does not target:*
 
 - End users of above applications
+- Cloud Administrators
 
 ** **
 
@@ -62,6 +65,7 @@ Design Implications and Discussion:
 
 - Since Hydra is meant to work on a multi cloud platform, CI/CD for each cloud will need to differ slightly in accordance with each respective API and access structure.
 
+** **
 
 ## 5. Acceptance criteria
 
@@ -86,14 +90,22 @@ Stretch (also not in any particular order):
 6) Multiple Request servers per Cloud
 7) More than two clouds
 
+** **
+
 ## 6.  Release Planning:
 
-1) Get a basic web server running on GCP and AWS that can connect to CloudSQL and RDS respectively
-2) Ensure the webapp will have will CRUD functionality as described by the mentor (garage reservation system with users and cars)
-3) Separate the front end to be served by a CDN
-4) Extract the request handling to Request Servers that will load balance requests to the webserver(s) and track their statuses (per cloud)
-5) Create a DNS name for the primary request server and route CDN traffic to it
-6) Connect the Request Servers together and implement cross-cloud load balancing and health checks
-7) Implement DNS failover on the secondary Request Server to redirect DNS servers to it instead
-8) Extract the database access layer into a separate Database Access Server
-9) Connect Database Access Serveers together and implement distributed reads and writes
+Sprint 1:
+* Create a sample garage reservation system that mirrors a real world application
+  * Get a basic web server running on GCP that can connect to CloudSQL
+  * Get a basic web server running on AWS that can connect to RDS
+  * Ensure the web app can serve static content
+  * Ensure the web app can serve dynamic content and have will CRUD functionality as described by the mentor (garage reservation system with users and cars)
+
+Product Backlog:
+* Separate the front end to be served by a CDN
+* Extract the request handling to Request Servers that will load balance requests to the webserver(s) and track their statuses (per cloud)
+* Create a DNS name for the primary request server and route CDN traffic to it
+* Connect the Request Servers together and implement cross-cloud load balancing and health checks
+* Implement DNS failover on the secondary Request Server to redirect DNS servers to it instead
+* Extract the database access layer into a separate Database Access Server
+* Connect Database Access Servers together and implement distributed reads and writes
