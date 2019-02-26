@@ -3,9 +3,35 @@ package main
 import (
 	"log"
 	"net/http"
-
+	"fmt"
+	"os"
+	"os/signal"
+	"os/exec"
+	"strings"
+	"time"
 	"github.com/gorilla/mux"
+	"github.com/otoolep/hraftd/store"
 )
+
+const (
+	retainSnapshotCount = 2
+	raftTimeout			= 10 * time.Second
+)
+
+// Store is the interface Raft-backed key-value stores must implement.
+type Store interface {
+	// Get returns the value for the given key.
+	Get(key string) (string, error)
+
+	// Set sets the value for the given key, via distributed consensus.
+	Set(key, value string) error
+
+	// Delete removes the given key, via distributed consensus.
+	Delete(key string) error
+
+	// Join joins the node, identitifed by nodeID and reachable at addr, to the cluster.
+	Join(nodeID string, addr string) error
+}
 
 //Use "go run *.go" to run the program
 // Main function
@@ -13,17 +39,6 @@ func main() {
 	// Init router
 	router := mux.NewRouter()
 
-	// Hardcoded data - @todo: add database
-/*	reservations = append(reservations, Reservation{ID: "1", StartTime: "438227", EndTime: "438227", CarID: "23", GarageID: "231"})
-	reservations = append(reservations, Reservation{ID: "2", StartTime: "438227", EndTime: "438227", CarID: "11", GarageID: "232"})
-	users = append(users, User{ID: "1", Username: "filik", Email: "yo@dot", Password: "1234"})
-	users = append(users, User{ID: "1", Username: "filik", Email: "yo@dot", Password: "1234"})
-	cars = append(cars, Car{ID: "1", UserID: "23", Model: "BMW"})
-	cars = append(cars, Car{ID: "2", UserID: "23", Model: "MERCEDES"})
-	garages = append(garages, Garage{ID: "1", Name: "1st", MaxCars: "5"})
-	garages = append(garages, Garage{ID: "2", Name: "2nd", MaxCars: "3"})
-	history = append(history, History{ID: "1", ReservationID: "2"})
-*/
 	// Reservation route handles & endpoints
 	router.HandleFunc("/reservations", GetReservations).Methods("GET")
 	router.HandleFunc("/reservations/", GetReservations).Methods("GET")
@@ -65,6 +80,37 @@ func main() {
 	// History route handler & endpoint
 	router.HandleFunc("/history/", GetHistory).Methods("GET")
 
+	//router.HandleFunc("/join/", handleRaftJoinRequest).Methods("POST")
+
 	// Start server
-	log.Fatal(http.ListenAndServe(":8888", router))
+	go func() {
+		log.Fatal(http.ListenAndServe(":8888", router))
+	}()
+
+	// Get LAN IP (private IP in GCP console)
+	cmd := "ifconfig | grep 'inet 10' | awk '{print $2}'"
+	out, _ := exec.Command("bash", "-c", cmd).Output()
+	localIP := string(out)
+	raftIP := strings.Replace(localIP+":12000", "\n", "", -1)
+
+	// Directory where Raft logs and ledgers will be stored
+	raftNodeStoreDir := "node.secret"
+	os.MkdirAll(raftNodeStoreDir, 0700)
+
+	s := store.New(false)
+	s.RaftDir = raftNodeStoreDir
+	s.RaftBind = raftIP
+
+	// Hardcoded for now, will probably configure via env for fresh Raft startup
+	isFirstNode := true
+
+	if err := s.Open(isFirstNode, "node0"); err != nil {
+		log.Fatalf("Failed to opeen store: %s", err.Error())
+	}
+
+	// Block on a channel that waits for a SIGKILL, can kill via Ctrl+C
+	terminate := make(chan os.Signal, 1)
+	signal.Notify(terminate, os.Interrupt)
+	<-terminate
+	fmt.Println("Shutting down node")
 }
