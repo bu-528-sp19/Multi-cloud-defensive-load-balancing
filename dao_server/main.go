@@ -104,12 +104,14 @@ func main() {
 	if (!isFirstNode) {
 		leaderIP := os.Getenv("LEADER_IP")
 		b, err := json.Marshal(map[string]string{"addr": raftIP, "id":nodeID})
-        if err != nil {
+
+		if err != nil {
 			panic(err)
-        }
+		}
+
 		fmt.Println(leaderIP)
-		_,_ = http.Post(leaderIP+"/join", "application-type/json", bytes.NewReader(b))
-   }
+		_,_ = http.Post("http://"+leaderIP+"/join", "application-type/json", bytes.NewReader(b))
+	}
 
 	go func() {
 		log.Fatal(http.ListenAndServe(":8888", router))
