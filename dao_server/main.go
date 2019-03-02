@@ -89,7 +89,7 @@ func main() {
 	// Hardcoded for now, will probably configure via env for fresh Raft startup
 	isLeader := os.Getenv("LEADER")
 	var isFirstNode bool
-	if (isLeader == "TRUE") {
+	if (isLeader == "true") {
 		isFirstNode = true
 	} else {
 		isFirstNode = false
@@ -107,6 +107,7 @@ func main() {
         if err != nil {
 			panic(err)
         }
+		fmt.Println(leaderIP)
 		_,_ = http.Post(leaderIP+"/join", "application-type/json", bytes.NewReader(b))
    }
 
