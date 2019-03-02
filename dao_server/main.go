@@ -102,8 +102,12 @@ func main() {
 	}
 
 	if (!isFirstNode) {
+		ipCmd := "curl -H 'Metadata-Flavor: Google' http://169.254.169.254/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip"
+		ip, _ := exec.Command("bash", "-c", ipCmd).Output()
+		externalIP := string(ip)
+		externalRaftIP := strings.Replace(externalIP+":12000", "\n", "", -1)
 		leaderIP := os.Getenv("LEADER_IP")
-		b, err := json.Marshal(map[string]string{"addr": raftIP, "id":nodeID})
+		b, err := json.Marshal(map[string]string{"addr": externalRaftIP, "id":nodeID})
 
 		if err != nil {
 			panic(err)
