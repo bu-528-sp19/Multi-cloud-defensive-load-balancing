@@ -3,8 +3,6 @@ package main
 import (
   "database/sql"
   "fmt"
-  "os"
-  "strconv"
   _ "github.com/lib/pq"
 )
 
