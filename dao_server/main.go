@@ -2,10 +2,25 @@ package main
 
 import (
 	"log"
+	"bytes"
+	"encoding/json"
 	"net/http"
-
+	"fmt"
+	"os"
+	"os/signal"
+	"os/exec"
+	"strings"
+	"time"
 	"github.com/gorilla/mux"
+	"github.com/otoolep/hraftd/store"
 )
+
+const (
+	retainSnapshotCount = 2
+	raftTimeout			= 10 * time.Second
+)
+
+var s *store.Store
 
 //Use "go run *.go" to run the program
 // Main function
@@ -13,17 +28,6 @@ func main() {
 	// Init router
 	router := mux.NewRouter()
 
-	// Hardcoded data - @todo: add database
-/*	reservations = append(reservations, Reservation{ID: "1", StartTime: "438227", EndTime: "438227", CarID: "23", GarageID: "231"})
-	reservations = append(reservations, Reservation{ID: "2", StartTime: "438227", EndTime: "438227", CarID: "11", GarageID: "232"})
-	users = append(users, User{ID: "1", Username: "filik", Email: "yo@dot", Password: "1234"})
-	users = append(users, User{ID: "1", Username: "filik", Email: "yo@dot", Password: "1234"})
-	cars = append(cars, Car{ID: "1", UserID: "23", Model: "BMW"})
-	cars = append(cars, Car{ID: "2", UserID: "23", Model: "MERCEDES"})
-	garages = append(garages, Garage{ID: "1", Name: "1st", MaxCars: "5"})
-	garages = append(garages, Garage{ID: "2", Name: "2nd", MaxCars: "3"})
-	history = append(history, History{ID: "1", ReservationID: "2"})
-*/
 	// Reservation route handles & endpoints
 	router.HandleFunc("/reservations", GetReservations).Methods("GET")
 	router.HandleFunc("/reservations/", GetReservations).Methods("GET")
@@ -57,7 +61,7 @@ func main() {
 	router.HandleFunc("/cars/", GetCars).Methods("GET")
 	router.HandleFunc("/cars/{id}", GetCar).Methods("GET")
 	router.HandleFunc("/cars", CreateCar).Methods("POST")
-	router.HandleFunc("/cars", CreateCar).Methods("POST")
+	router.HandleFunc("/cars/", CreateCar).Methods("POST")
 	router.HandleFunc("/get-cars-by-user/{id}", GetCarsByUser).Methods("GET")
 	//router.HandleFunc("/cars/{id}", UpdateCar).Methods("PUT")
 	router.HandleFunc("/cars/{id}", DeleteCar).Methods("DELETE")
@@ -69,6 +73,57 @@ func main() {
 	// History route handler & endpoint
 	router.HandleFunc("/history/", GetHistory).Methods("GET")
 
-	// Start server
-	log.Fatal(http.ListenAndServe(":8888", router))
+	router.HandleFunc("/join", handleRaftJoinRequest).Methods("POST")
+	router.HandleFunc("/join/", handleRaftJoinRequest).Methods("POST")
+
+	// Get LAN IP (private IP in GCP console)
+	cmd := "ifconfig | grep 'inet 10' | awk '{print $2}'"
+	out, _ := exec.Command("bash", "-c", cmd).Output()
+	localIP := string(out)
+	raftIP := strings.Replace(localIP+":12000", "\n", "", -1)
+
+	// Directory where Raft logs and ledgers will be stored
+	raftNodeStoreDir := "node.secret"
+	os.MkdirAll(raftNodeStoreDir, 0700)
+
+	s = store.New(false)
+	s.RaftDir = raftNodeStoreDir
+	s.RaftBind = raftIP
+
+	// Hardcoded for now, will probably configure via env for fresh Raft startup
+	isLeader := os.Getenv("LEADER")
+	var isFirstNode bool
+	if (isLeader == "true") {
+		isFirstNode = true
+	} else {
+		isFirstNode = false
+	}
+
+	nodeID := os.Getenv("RAFT_NODE_ID")
+
+	if err := s.Open(isFirstNode, nodeID); err != nil {
+		log.Fatalf("Failed to opeen store: %s", err.Error())
+	}
+
+	if (!isFirstNode) {
+		leaderIP := os.Getenv("LEADER_IP")
+		b, err := json.Marshal(map[string]string{"addr": raftIP, "id":nodeID})
+
+		if err != nil {
+			panic(err)
+		}
+
+		fmt.Println(leaderIP)
+		_,_ = http.Post("http://"+leaderIP+"/join", "application-type/json", bytes.NewReader(b))
+	}
+
+	go func() {
+		log.Fatal(http.ListenAndServe(":8888", router))
+	}()
+
+	// Block on a channel that waits for a SIGKILL, can kill via Ctrl+C
+	terminate := make(chan os.Signal, 1)
+	signal.Notify(terminate, os.Interrupt)
+	<-terminate
+	fmt.Println("Shutting down node")
 }

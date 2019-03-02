@@ -34,7 +34,7 @@ func GetGarages(w http.ResponseWriter, req *http.Request) {
 	json.NewEncoder(w).Encode(garages)
 }
 
-func CreateGarage(w http.ResponseWriter, req *http.Request) {	
+func CreateGarage(w http.ResponseWriter, req *http.Request) {
 	(w).Header().Set("Access-Control-Allow-Origin", "*")
 	var garage Garage
 	_ = json.NewDecoder(req.Body).Decode(&garage)

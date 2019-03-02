@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
-
 	"github.com/gorilla/mux"
 )
 
@@ -13,8 +12,6 @@ type Car struct {
 	UserID int `json:"UserID"`
 	Model  string `json:"Model"`
 }
-
-var cars []Car
 
 func GetCar(w http.ResponseWriter, req *http.Request) {
 	params := mux.Vars(req)
@@ -45,8 +42,8 @@ func GetCarsByUser(w http.ResponseWriter, req *http.Request) {
 }
 
 func CreateCar(w http.ResponseWriter, req *http.Request) {
-	var car Car
 	(w).Header().Set("Access-Control-Allow-Origin", "*")
+	var car Car
 	_ = json.NewDecoder(req.Body).Decode(&car)
 	car = createCar(car)
 	json.NewEncoder(w).Encode(car)
