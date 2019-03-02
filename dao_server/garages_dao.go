@@ -3,7 +3,6 @@ package main
 func createGarage(garageObj Garage) Garage {
 	db := dbLogin()
 	defer db.Close()
-
 	row, err := db.Query(
 		"INSERT INTO garages (name, max_cars) "+
 		"VALUES($1, $2) "+

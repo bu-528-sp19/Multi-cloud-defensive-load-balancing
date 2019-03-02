@@ -76,7 +76,6 @@ func getCar(carID int) (Car) {
 func getCars() ([]Car) {
 	db := dbLogin()
 	defer db.Close()
-
 	rows, err := db.Query("SELECT * FROM cars")
 
 	var allCars []Car
