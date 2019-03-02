@@ -102,7 +102,7 @@ func main() {
 	}
 
 	if (!isFirstNode) {
-		ipCmd := "curl -H 'Metadata-Flavor: Google' http://169.254.169.254/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip"
+		ipCmd := os.Getenv("EXTERNAL_IP_QUERY")
 		ip, _ := exec.Command("bash", "-c", ipCmd).Output()
 		externalIP := string(ip)
 		externalRaftIP := strings.Replace(externalIP+":12000", "\n", "", -1)
