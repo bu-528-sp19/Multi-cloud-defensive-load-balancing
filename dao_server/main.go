@@ -2,6 +2,8 @@ package main
 
 import (
 	"log"
+	"bytes"
+	"encoding/json"
 	"net/http"
 	"fmt"
 	"os"
@@ -59,7 +61,7 @@ func main() {
 	router.HandleFunc("/cars/", GetCars).Methods("GET")
 	router.HandleFunc("/cars/{id}", GetCar).Methods("GET")
 	router.HandleFunc("/cars", CreateCar).Methods("POST")
-	router.HandleFunc("/cars", CreateCar).Methods("POST")
+	router.HandleFunc("/cars/", CreateCar).Methods("POST")
 	router.HandleFunc("/get-cars-by-user/{id}", GetCarsByUser).Methods("GET")
 	//router.HandleFunc("/cars/{id}", UpdateCar).Methods("PUT")
 	router.HandleFunc("/cars/{id}", DeleteCar).Methods("DELETE")
@@ -85,11 +87,28 @@ func main() {
 	s.RaftBind = raftIP
 
 	// Hardcoded for now, will probably configure via env for fresh Raft startup
-	isFirstNode := true
+	isLeader := os.Getenv("LEADER")
+	var isFirstNode bool
+	if (isLeader == "TRUE") {
+		isFirstNode = true
+	} else {
+		isFirstNode = false
+	}
 
-	if err := s.Open(isFirstNode, "node0"); err != nil {
+	nodeID := os.Getenv("RAFT_NODE_ID")
+
+	if err := s.Open(isFirstNode, nodeID); err != nil {
 		log.Fatalf("Failed to opeen store: %s", err.Error())
 	}
+
+	if (!isFirstNode) {
+		leaderIP := os.Getenv("LEADER_IP")
+		b, err := json.Marshal(map[string]string{"addr": raftIP, "id":nodeID})
+        if err != nil {
+			panic(err)
+        }
+		_,_ = http.Post(leaderIP+"/join", "application-type/json", bytes.NewReader(b))
+   }
 
 	go func() {
 		log.Fatal(http.ListenAndServe(":8888", router))
