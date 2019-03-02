@@ -54,7 +54,7 @@ func main() {
 
 	// Cars route handles & endpoints
 	router.HandleFunc("/cars", GetCars).Methods("GET")
-	router.HandleFunc("/carsz/", GetCars).Methods("GET")
+	router.HandleFunc("/cars/", GetCars).Methods("GET")
 	router.HandleFunc("/cars/{id}", GetCar).Methods("GET")
 	router.HandleFunc("/cars", CreateCar).Methods("POST")
 	router.HandleFunc("/cars", CreateCar).Methods("POST")
