@@ -71,6 +71,8 @@ func main() {
 
 	router.HandleFunc("/join", handleRaftJoinRequest).Methods("POST")
 	router.HandleFunc("/join/", handleRaftJoinRequest).Methods("POST")
+	router.HandleFunc("/raft-dump", handleRaftDump).Methods("GET")
+	router.HandleFunc("/raft-dump/", handleRaftDump).Methods("GET")
 
 	// Get LAN IP (private IP in GCP console)
 	cmd := "ifconfig | grep 'inet 10' | awk '{print $2}'"
@@ -113,7 +115,6 @@ func main() {
 			panic(err)
 		}
 
-		fmt.Println(leaderIP)
 		_,_ = http.Post("http://"+leaderIP+"/join", "application-type/json", bytes.NewReader(b))
 	}
 

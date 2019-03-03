@@ -16,3 +16,7 @@ func handleRaftJoinRequest(w http.ResponseWriter, req *http.Request) {
 
 	s.Join(nodeID, remoteAddr)
 }
+
+func handleRaftDump(w http.ResponseWriter, req *http.Request) {
+	
+}
