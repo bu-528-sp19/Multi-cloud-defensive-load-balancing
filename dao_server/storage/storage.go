@@ -17,7 +17,6 @@ import (
 	"path/filepath"
 	"sync"
 	"time"
-
 	"github.com/hashicorp/raft"
 	"github.com/hashicorp/raft-boltdb"
 )
@@ -198,6 +197,12 @@ func (s *Store) Join(nodeID, addr string) error {
 	}
 	s.logger.Printf("node %s at %s joined successfully", nodeID, addr)
 	return nil
+}
+
+func (s *Store) GetAll() (map[string]string, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.m, nil
 }
 
 type fsm Store
