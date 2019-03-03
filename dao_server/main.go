@@ -12,7 +12,8 @@ import (
 	"strings"
 	"time"
 	"github.com/gorilla/mux"
-	"github.com/bu-528-sp19/Multi-cloud-defensive-load-balancing/dao_server/storage"
+//	"github.com/bu-528-sp19/Multi-cloud-defensive-load-balancing/dao_server/storage"
+	"./storage"
 )
 
 const (
