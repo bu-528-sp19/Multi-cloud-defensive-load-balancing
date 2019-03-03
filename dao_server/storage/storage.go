@@ -199,10 +199,10 @@ func (s *Store) Join(nodeID, addr string) error {
 	return nil
 }
 
-func (s *Store) GetAll() (map[string]string, error) {
+func (s *Store) GetAll() (map[string]string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	return s.m, nil
+	return s.m
 }
 
 type fsm Store

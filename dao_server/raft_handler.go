@@ -19,5 +19,8 @@ func handleRaftJoinRequest(w http.ResponseWriter, req *http.Request) {
 
 func handleRaftDump(w http.ResponseWriter, req *http.Request) {
 	(w).Header().Set("Access-Control-Allow-Origin", "*")
+	mapToJson, _ := json.Marshal(s.GetAll())
+	fmt.Println(mapToJson)
+	fmt.Println(s.GetAll())
 	json.NewEncoder(w).Encode(s.GetAll())
 }
