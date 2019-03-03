@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 	"github.com/gorilla/mux"
-	"github.com/otoolep/hraftd/store"
+	"github.com/bu-528-sp19/Multi-cloud-defensive-load-balancing/dao_server/storage"
 )
 
 const (
