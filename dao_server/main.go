@@ -12,7 +12,8 @@ import (
 	"strings"
 	"time"
 	"github.com/gorilla/mux"
-	"github.com/otoolep/hraftd/store"
+//	"github.com/bu-528-sp19/Multi-cloud-defensive-load-balancing/dao_server/storage"
+	"./storage"
 )
 
 const (
@@ -75,6 +76,8 @@ func main() {
 
 	router.HandleFunc("/join", handleRaftJoinRequest).Methods("POST")
 	router.HandleFunc("/join/", handleRaftJoinRequest).Methods("POST")
+	router.HandleFunc("/raft-dump", handleRaftDump).Methods("GET")
+	router.HandleFunc("/raft-dump/", handleRaftDump).Methods("GET")
 
 	// Get LAN IP (private IP in GCP console)
 	cmd := "ifconfig | grep 'inet 10' | awk '{print $2}'"
@@ -106,14 +109,17 @@ func main() {
 	}
 
 	if (!isFirstNode) {
+		ipCmd := os.Getenv("EXTERNAL_IP_QUERY")
+		ip, _ := exec.Command("bash", "-c", ipCmd).Output()
+		externalIP := string(ip)
+		externalRaftIP := strings.Replace(externalIP+":12000", "\n", "", -1)
 		leaderIP := os.Getenv("LEADER_IP")
-		b, err := json.Marshal(map[string]string{"addr": raftIP, "id":nodeID})
+		b, err := json.Marshal(map[string]string{"addr": externalRaftIP, "id":nodeID})
 
 		if err != nil {
 			panic(err)
 		}
 
-		fmt.Println(leaderIP)
 		_,_ = http.Post("http://"+leaderIP+"/join", "application-type/json", bytes.NewReader(b))
 	}
 

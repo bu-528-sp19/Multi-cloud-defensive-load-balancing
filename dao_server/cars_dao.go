@@ -1,15 +1,23 @@
 package main
 
+import (
+	"time"
+	"fmt"
+//	"strconv"
+)
+
 func createCar(carObj Car) Car {
+	query := fmt.Sprintf(
+		"INSERT INTO cars (user_id, model) "+
+		"VALUES (%d, '%s') RETURNING id;",
+		carObj.UserID, carObj.Model)
+
+	s.Set(time.Now().String(), query)
+
 	db := dbLogin()
 	defer  db.Close()
 
-	row, err := db.Query(
-		"INSERT INTO cars (user_id, model) "+
-		"VALUES ($1, $2) "+
-		"RETURNING id",
-		carObj.UserID,
-		carObj.Model)
+	row, err := db.Query(query)
 
 	if err != nil {
 		panic (err)
