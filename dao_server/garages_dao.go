@@ -1,14 +1,23 @@
 package main
 
+import (
+	"time"
+	"fmt"
+)
+
 func createGarage(garageObj Garage) Garage {
-	db := dbLogin()
-	defer db.Close()
-	row, err := db.Query(
+	query := fmt.Sprintf(
 		"INSERT INTO garages (name, max_cars) "+
-		"VALUES($1, $2) "+
-		"RETURNING id",
+			"VALUES('%s', %d) "+
+			"RETURNING id",
 		garageObj.Name,
 		garageObj.MaxCars)
+
+	s.Set(time.Now().String(), query)
+
+	db := dbLogin()
+	defer db.Close()
+	row, err := db.Query(query)
 
 	if err != nil {
 		panic (err)

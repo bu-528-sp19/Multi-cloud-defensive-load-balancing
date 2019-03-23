@@ -1,16 +1,24 @@
 package main
 
-func createUser(userObj User) User {
-	db := dbLogin()
-	defer db.Close()
+import (
+	"time"
+	"fmt"
+)
 
-	row, err := db.Query(
+func createUser(userObj User) User {
+	query := fmt.Sprintf(
 		"INSERT INTO users (username, password, email) "+
-		"VALUES ($1, $2, $3) "+
-		"RETURNING id",
+			"VALUES ('%s', '%s', '%s') "+
+			"RETURNING id",
 		userObj.Username,
 		userObj.Password,
 		userObj.Email)
+	
+	s.Set(time.Now().String(), query)
+
+	db := dbLogin()
+	defer db.Close()
+	row, err := db.Query(query)
 
 	if err != nil {
 		panic(err)

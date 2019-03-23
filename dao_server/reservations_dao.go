@@ -1,22 +1,29 @@
 package main
 
-import "time"
+import (
+	"time"
+	"fmt"
+)
 
 func createReservation(reservationObj Reservation) Reservation {
-	db := dbLogin()
-	defer db.Close()
-
 	time_layout := "2006-01-02T15:04:05.000Z"
 	start, _ := time.Parse(time_layout, reservationObj.StartTime)
 	end, _ := time.Parse(time_layout, reservationObj.EndTime)
-	row, err := db.Query(
+
+	query := fmt.Sprintf(
 		"INSERT INTO reservations (start_time, end_time, car_id, garage_id) "+
-		"VALUES($1, $2, $3, $4) "+
-		"RETURNING id",
+			"VALUES('%s', '%s', %d, %d) "+
+			"RETURNING id",
 		start,
 		end,
 		reservationObj.CarID,
 		reservationObj.GarageID)
+	
+	s.Set(time.Now().String(), query)
+
+	db := dbLogin()
+	defer db.Close()
+	row, err := db.Query(query)
 
 	if err != nil {
 		panic(err)
