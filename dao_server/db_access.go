@@ -64,7 +64,7 @@ func dbLogin() (*sql.DB) {
 
 //GCP
 
-	port, _ := strconv.Atoi(os.Getenv("PORT"))
+	port, _ = strconv.Atoi(os.Getenv("PORT"))
 	psqlInfoAWS := fmt.Sprintf(
 		"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		os.Getenv("HOSTAWS"),
@@ -96,8 +96,9 @@ func dbLogin() (*sql.DB) {
 		if (dice%2 == 0){
 			return db
 		}
-		else
+		else{
 			return dbAWS
+		}
 
 	}
 
