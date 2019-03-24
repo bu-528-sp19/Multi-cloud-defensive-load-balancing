@@ -86,17 +86,14 @@ func dbLogin() (*sql.DB) {
 
 	if (errAWS == nil) && (err!=nil){
 		return dbAWS
-	}
-	else if (errAWS!=nil)&&(err==nil){
+	}else if (errAWS!=nil)&&(err==nil){
 		return db
-	}
-	else if (errAWS==nil)&&(err==nil){
+	}else if (errAWS==nil)&&(err==nil){
 		rand.Seed(time.Now().UnixNano())
 		dice=rand.Intn(20)
 		if (dice%2 == 0){
 			return db
-		}
-		else{
+		}else{
 			return dbAWS
 		}
 
