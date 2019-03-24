@@ -209,6 +209,10 @@ func (s *Store) IsLeader() bool {
 	return s.raft.State() == raft.Leader
 }
 
+func (s *Store) GetLeaderAddress() string {
+	return string(s.raft.Leader())
+}
+
 type fsm Store
 
 // Apply applies a Raft log entry to the key-value store.

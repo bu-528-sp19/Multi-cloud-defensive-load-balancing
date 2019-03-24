@@ -3,20 +3,22 @@ package main
 import (
 	"time"
 	"fmt"
+	"net/http"
+	"bytes"
 	"encoding/json"
 )
 
 const CARS_ROUTE string = "cars/"
 
 func createCar(carObj Car) Car {
-	if !s.IsLeader {
-		leaderIP := s.raft.Leader() + ":8888"
+	if !s.IsLeader() {
+		leaderIP := s.GetLeaderAddress() + ":8888"
 		url := leaderIP + CARS_ROUTE
-		
+
 		jsonStr, _ := json.Marshal(carObj)
-		req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
+		req, _ := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
 		client := &http.Client{}
-		resp, err := clent.Do(req)
+		resp, _ := client.Do(req)
 		defer resp.Body.Close()
 		_ = json.NewDecoder(resp.Body).Decode(&carObj)
 		return carObj
