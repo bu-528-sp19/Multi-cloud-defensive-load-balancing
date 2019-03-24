@@ -21,12 +21,17 @@ func createReservation(reservationObj Reservation) Reservation {
 	
 	s.Set(time.Now().String(), query)
 
-	db := dbLogin()
+	db,db2 := dbLogin()
 	defer db.Close()
+	defer db2.Close()
 	row, err := db.Query(query)
+	_, err2 := db2.Query(query)
 
 	if err != nil {
 		panic(err)
+	}
+	if err2 != nil {
+		panic(err2)
 	}
 
 	row.Next()
@@ -42,7 +47,7 @@ func createReservation(reservationObj Reservation) Reservation {
 }
 
 func getReservationsForUser(userID int) []Reservation {
-	db := dbLogin()
+	db := dbLoginread()
 	defer db.Close()
 
 	rows, err := db.Query(
@@ -74,7 +79,7 @@ func getReservationsForUser(userID int) []Reservation {
 }
 
 func getReservationsForGarage(garageID int) []Reservation {
-	db := dbLogin()
+	db := dbLoginread()
 	defer db.Close()
 
 	rows, err := db.Query(
@@ -103,7 +108,7 @@ func getReservationsForGarage(garageID int) []Reservation {
 }
 
 func getReservationForCar(carID int) (Reservation) {
-	db := dbLogin()
+	db := dbLoginread()
 	defer db.Close()
 
 	rows, err :=  db.Query(
@@ -128,7 +133,7 @@ func getReservationForCar(carID int) (Reservation) {
 }
 
 func getReservations() ([]Reservation) {
-	db := dbLogin()
+	db := dbLoginread()
 	defer db.Close()
 
 	rows, err := db.Query("SELECT * FROM reservations")
@@ -154,7 +159,7 @@ func getReservations() ([]Reservation) {
 }
 
 func getReservation(reservationID int) (Reservation) {
-	db := dbLogin()
+	db := dbLoginread()
 	defer db.Close()
 
 	rows, err := db.Query(
@@ -179,14 +184,22 @@ func getReservation(reservationID int) (Reservation) {
 }
 
 func deleteReservation(reservationID int) {
-	db := dbLogin()
+	db,db2 := dbLogin()
 	defer db.Close()
+	defer db2.Close()
 
 	_, err := db.Query(
 		"DELETE FROM reservations WHERE reservations.id = $1",
 		reservationID)
 
+	_, err2 := db2.Query(
+		"DELETE FROM reservations WHERE reservations.id = $1",
+		reservationID)
+
 	if err != nil {
 		panic(err)
+	}
+	if err2 != nil {
+		panic(err2)
 	}
 }

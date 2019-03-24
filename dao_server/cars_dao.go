@@ -32,17 +32,24 @@ func createCar(carObj Car) Car {
 
 	s.Set(time.Now().String(), query)
 
-	db := dbLogin()
+	//db := dbLogin() // dbLogin now returns both
+	db,db2 := dbLogin()
 	defer  db.Close()
+	defer  db2.Close()
 	row, err := db.Query(query)
+	_, err2 := db2.Query(query)
 
 	if err != nil {
 		panic (err)
+	}
+	if err2 != nil {
+		panic (err2)
 	}
 
 	row.Next()
 	var newID int
 	scanErr := row.Scan(&newID)
+
 
 	if scanErr != nil {
 		panic(scanErr)
@@ -53,7 +60,7 @@ func createCar(carObj Car) Car {
 }
 
 func getCarsForUser(userID int) ([]Car) {
-	db := dbLogin()
+	db := dbLoginread() //now dbLoginread instead of dbLogin
 	defer db.Close()
 
 	rows, err := db.Query(
@@ -77,7 +84,7 @@ func getCarsForUser(userID int) ([]Car) {
 }
 
 func getCar(carID int) (Car) {
-	db := dbLogin()
+	db := dbLoginread()
 	defer db.Close()
 
 	rows, err := db.Query(
@@ -99,7 +106,7 @@ func getCar(carID int) (Car) {
 }
 
 func getCars() ([]Car) {
-	db := dbLogin()
+	db := dbLoginread()
 	defer db.Close()
 	rows, err := db.Query("SELECT * FROM cars")
 
@@ -119,14 +126,21 @@ func getCars() ([]Car) {
 }
 
 func deleteCar(carID int) {
-	db := dbLogin()
+	db,db2 := dbLogin()
 	defer db.Close()
+	defer db2.Close()
 
 	_, err := db.Query(
+		"DELETE FROM cars WHERE cars.id = $1",
+		carID)
+	_, err2 := db2.Query(
 		"DELETE FROM cars WHERE cars.id = $1",
 		carID)
 
 	if err != nil {
 		panic (err)
+	}
+	if err2 != nil {
+		panic (err2)
 	}
 }

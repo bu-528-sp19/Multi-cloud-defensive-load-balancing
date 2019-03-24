@@ -15,12 +15,18 @@ func createGarage(garageObj Garage) Garage {
 
 	s.Set(time.Now().String(), query)
 
-	db := dbLogin()
+	db,db2 := dbLogin()
 	defer db.Close()
+	defer db2.Close()
 	row, err := db.Query(query)
+	_, err2 := db.Query(query)
+
 
 	if err != nil {
 		panic (err)
+	}
+	if err2 != nil {
+		panic (err2)
 	}
 
 	row.Next()
@@ -36,7 +42,7 @@ func createGarage(garageObj Garage) Garage {
 }
 
 func getGarages() ([]Garage) {
-	db := dbLogin()
+	db := dbLoginread()
 	defer db.Close()
 
 	rows, _ := db.Query("SELECT * FROM garages")
@@ -57,7 +63,7 @@ func getGarages() ([]Garage) {
 }
 
 func getGarage(garageID int) (Garage) {
-	db := dbLogin()
+	db := dbLoginread()
 	defer db.Close()
 
 	rows, err := db.Query(
@@ -84,14 +90,21 @@ func getGarage(garageID int) (Garage) {
 }
 
 func deleteGarage(garageID int) {
-	db := dbLogin()
+	db,db2 := dbLogin()
 	defer db.Close()
+	defer db2.Close()
 
 	_, err := db.Query(
+		"DELETE from garages WHERE garages.id = $1",
+		garageID)
+	_, err2 := db2.Query(
 		"DELETE from garages WHERE garages.id = $1",
 		garageID)
 
 	if err != nil {
 		panic(err)
+	}
+	if err2 != nil {
+		panic(err2)
 	}
 }

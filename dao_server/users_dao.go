@@ -16,12 +16,18 @@ func createUser(userObj User) User {
 	
 	s.Set(time.Now().String(), query)
 
-	db := dbLogin()
+	db,db2 := dbLogin()
 	defer db.Close()
 	row, err := db.Query(query)
 
+	defer db2.Close()
+	_, err2 := db2.Query(query)
+
 	if err != nil {
 		panic(err)
+	}
+	if err2 != nil {
+		panic(err2)
 	}
 
 	row.Next()
@@ -37,7 +43,7 @@ func createUser(userObj User) User {
 }
 
 func getUserById(userID int) (User) {
-	db := dbLogin()
+	db := dbLoginread()
 	defer db.Close()
 
 	rows, err := db.Query(
@@ -62,7 +68,7 @@ func getUserById(userID int) (User) {
 }
 
 func getUsers() ([]User) {
-	db := dbLogin()
+	db := dbLoginread()
 	defer db.Close()
 
 	rows, err := db.Query("SELECT * FROM users")
@@ -85,7 +91,7 @@ func getUsers() ([]User) {
 }
 
 func getUser(username string, password string) (User) {
-	db := dbLogin()
+	db := dbLoginread()
 	defer db.Close()
 
 	rows, err := db.Query(
@@ -114,14 +120,20 @@ func getUser(username string, password string) (User) {
 }
 
 func deleteUser(userID int) {
-	db := dbLogin()
+	db,db2 := dbLogin()
 	defer db.Close()
+	defer db2.Close()
 
 	_, err := db.Query(
 		"DELETE FROM users where users.id = $1",
 		userID)
-
+	_, err2 := db2.Query(
+		"DELETE FROM users where users.id = $1",
+		userID)
 	if err != nil {
 		panic(err)
+	}
+	if err2 != nil {
+		panic(err2)
 	}
 }
