@@ -4,7 +4,6 @@ import (
 	"time"
 	"fmt"
 	"encoding/json"
-//	"strconv"
 )
 
 const CARS_ROUTE string = "cars/"
