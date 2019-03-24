@@ -3,10 +3,26 @@ package main
 import (
 	"time"
 	"fmt"
+	"encoding/json"
 //	"strconv"
 )
 
+const CARS_ROUTE string = "cars/"
+
 func createCar(carObj Car) Car {
+	if !s.IsLeader {
+		leaderIP := s.raft.Leader() + ":8888"
+		url := leaderIP + CARS_ROUTE
+		
+		jsonStr, _ := json.Marshal(carObj)
+		req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
+		client := &http.Client{}
+		resp, err := clent.Do(req)
+		defer resp.Body.Close()
+		_ = json.NewDecoder(resp.Body).Decode(&carObj)
+		return carObj
+	}
+
 	query := fmt.Sprintf(
 		"INSERT INTO cars (user_id, model) "+
 			"VALUES (%d, '%s') RETURNING id;",
