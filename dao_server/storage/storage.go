@@ -206,7 +206,7 @@ func (s *Store) GetAll() (map[string]string) {
 }
 
 func (s *Store) IsLeader() bool {
-	return s.raft.State() == raft.Leader()
+	return s.raft.State() == raft.Leader
 }
 
 type fsm Store
