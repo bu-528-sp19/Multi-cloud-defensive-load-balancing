@@ -6,6 +6,7 @@ import (
   "os"
   "strconv"
   "math/rand"
+  "time"
   _ "github.com/lib/pq"
 )
 
@@ -90,7 +91,7 @@ func dbLogin() (*sql.DB) {
 		return db
 	}else if (errAWS==nil)&&(err==nil){
 		rand.Seed(time.Now().UnixNano())
-		dice=rand.Intn(20)
+		dice :=rand.Intn(20)
 		if (dice%2 == 0){
 			return db
 		}else{
