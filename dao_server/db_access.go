@@ -25,10 +25,10 @@ type DB_STATE struct {
 func DB_State_Change(w http.ResponseWriter, req *http.Request) {
 	(w).Header().Set("Access-Control-Allow-Origin", "*")
   fmt.Println("inside DB_State_Change")
-	var db_state_obj DB_STATE
-	_ = json.NewDecoder(req.Body).Decode(&db_state_obj)
+  var db_state_obj DB_STATE
+  _ = json.NewDecoder(req.Body).Decode(&db_state_obj)
   s.Set(db_state_obj.Name, db_state_obj.State)
-	json.NewEncoder(w).Encode(db_state_obj)
+  json.NewEncoder(w).Encode(db_state_obj)
 }
 
 //used by non-leader to notify leader of db state change
