@@ -30,12 +30,32 @@ func createCar(carObj Car) Car {
 		carObj.UserID,
 		carObj.Model)
 
-	s.Set(time.Now().String(), query)
+	cur_time := time.Now().String()
+	s.Set(cur_time, query)
 
 	//db := dbLogin() // dbLogin now returns both
 	db,db2 := dbLogin()
 	defer  db.Close()
 	defer  db2.Close()
+
+	//////////////////////////////////////////////////
+	//Database Forwarding
+
+	conn_err := db.Ping()
+	if conn_err != nil {
+		aws_status, _ := s.Get("AWS_DOWN")
+		if aws_status == "0" {
+			s.Set("AWS_DOWN", cur_time)
+		}
+	} else{
+			down_time, _ := s.Get("AWS_DOWN")
+			if down_time != "0" {
+				s.Set("AWS_DOWN", "0")
+				db_recover(db, down_time)
+			}
+	}
+	//////////////////////////////////////////////////
+
 	row, err := db.Query(query)
 	_, err2 := db2.Query(query)
 
@@ -62,6 +82,42 @@ func createCar(carObj Car) Car {
 func getCarsForUser(userID int) ([]Car) {
 	db := dbLoginread() //now dbLoginread instead of dbLogin
 	defer db.Close()
+
+	//////////////////////////////////////////////////
+	//Database Forwarding
+
+	if len(s.GetAll()) == 0 {
+		s.Set("AWS_DOWN", "0")
+	}
+
+	isLeader := "true"
+
+	conn_err := db.Ping()
+	if conn_err != nil {
+		fmt.Println("i guess the db is down\n")
+		aws_status, _ := s.Get("AWS_DOWN")
+		if aws_status == "0" {
+			if isLeader != "true" {
+				notify_leader("AWS_DOWN", time.Now().String())
+			} else{
+				s.Set("AWS_DOWN", time.Now().String())
+			}
+		}
+		//read from other db
+	} else{
+			down_time, _ := s.Get("AWS_DOWN")
+			if down_time != "0" {
+				fmt.Println("should not be here unless db was down\n")
+				if isLeader != "true" {
+					notify_leader("AWS_DOWN", "0")
+				} else{
+					s.Set("AWS_DOWN", "0")
+				}
+				db_recover(db, down_time)
+			}
+			db_recover(db, down_time)
+	}
+	//////////////////////////////////////////////////
 
 	rows, err := db.Query(
 		"SELECT * FROM cars WHERE user_id = $1",
