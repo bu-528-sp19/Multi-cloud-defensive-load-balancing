@@ -23,40 +23,40 @@ type DB_STATE struct {
 
 //used by the leader to change the state of a db in the raft log
 func DB_State_Change(w http.ResponseWriter, req *http.Request) {
-	(w).Header().Set("Access-Control-Allow-Origin", "*")
-  fmt.Println("inside DB_State_Change")
-  var db_state_obj DB_STATE
-  _ = json.NewDecoder(req.Body).Decode(&db_state_obj)
-  s.Set(db_state_obj.Name, db_state_obj.State)
-  json.NewEncoder(w).Encode(db_state_obj)
+    (w).Header().Set("Access-Control-Allow-Origin", "*")
+    fmt.Println("inside DB_State_Change")
+    var db_state_obj DB_STATE
+    _ = json.NewDecoder(req.Body).Decode(&db_state_obj)
+    s.Set(db_state_obj.Name, db_state_obj.State)
+    json.NewEncoder(w).Encode(db_state_obj)
 }
 
 //used by non-leader to notify leader of db state change
 func notify_leader(db_name string, val string) () {
-  fmt.Println("need to notify leader that " + db_name + " is down")
-  leaderIP := s.GetLeaderAddress() + ":8888"
-  url := leaderIP + "/db_state_change"
+    fmt.Println("need to notify leader that " + db_name + " is down")
+    leaderIP := s.GetLeaderAddress() + ":8888"
+    url := leaderIP + "/db_state_change"
 
-  db_state_obj := DB_STATE{Name: db_name, State: val}
-  jsonStr, _ := json.Marshal(db_state_obj)
-  req, _ := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
-  client := &http.Client{}
-  resp, _ := client.Do(req)
-  defer resp.Body.Close()
+    db_state_obj := DB_STATE{Name: db_name, State: val}
+    jsonStr, _ := json.Marshal(db_state_obj)
+    req, _ := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
+    client := &http.Client{}
+    resp, _ := client.Do(req)
+    defer resp.Body.Close()
 }
 
 
 //used by any node for database forwarding
 func db_recover(db *sql.DB, down_time string) (){
-  m := s.GetAll()
-  for key, query := range m {
-    fmt.Println(key, query)
-    if key != "AWS_DOWN" && compare_times(key, down_time) > 0 {
-      //if entry was committed to log after db went down, execute query
-      fmt.Println("execute", query)
-      //db.Query(query)
+    m := s.GetAll()
+    for key, query := range m {
+      fmt.Println(key, query)
+      if key != "AWS_DOWN" && compare_times(key, down_time) > 0 {
+        //if entry was committed to log after db went down, execute query
+        fmt.Println("execute", query)
+        //db.Query(query)
+      }
     }
-  }
 }
 
 func compare_times(down_time string, up_time string) (int) {
