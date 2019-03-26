@@ -115,7 +115,6 @@ func getCarsForUser(userID int) ([]Car) {
 				}
 				db_recover(db, down_time)
 			}
-			db_recover(db, down_time)
 	}
 	//////////////////////////////////////////////////
 
