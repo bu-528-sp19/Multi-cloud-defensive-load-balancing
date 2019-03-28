@@ -68,8 +68,8 @@ func main() {
 	router.HandleFunc("/cars/{id}", DeleteCar).Methods("DELETE")
 
 	//get car.jpg from aws s3 bucket
-	router.HandleFunc("/carpics", GetCarPics).Methods("GET")
-	router.HandleFunc("/carpics", UploadCarPics).Methods("POST")
+	//router.HandleFunc("/carpics", GetCarPics).Methods("GET")
+	//router.HandleFunc("/carpics", UploadCarPics).Methods("POST")
 
 	// History route handler & endpoint
 	router.HandleFunc("/history/", GetHistory).Methods("GET")

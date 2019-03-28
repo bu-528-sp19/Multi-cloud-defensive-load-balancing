@@ -17,7 +17,6 @@ type DatabaseInfo struct {
 	Port     int
 }
 
-//deleted test select function
 
 func gcpLoginRead() (*sql.DB, error) {
 	port, _ := strconv.Atoi(os.Getenv("PORT"))
@@ -42,7 +41,7 @@ func gcpLoginRead() (*sql.DB, error) {
 }
 
 func awsLoginRead() (*sql.DB, error) {
-	port, _ = strconv.Atoi(os.Getenv("PORT"))
+	port, _ := strconv.Atoi(os.Getenv("PORT"))
 	psqlInfoAWS := fmt.Sprintf(
 		"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		os.Getenv("HOSTAWS"),
@@ -53,26 +52,26 @@ func awsLoginRead() (*sql.DB, error) {
 	dbAWS, errAWS := sql.Open("postgres", psqlInfoAWS)
 
 	if errAWS != nil {
-		return dbAWS, err
+		return dbAWS, errAWS
 	}
 
 	errAWS = dbAWS.Ping()
 	if errAWS != nil {
-		return dbAWS, err
+		return dbAWS, errAWS
 	}
 
-	return dbAWS, err
+	return dbAWS, errAWS
 }
 
 func dbLoginread() *sql.DB {
 	//loop here
 	//Get GCP host
-	db, err = gcpLoginRead()
-	err2 = db.Ping()
+	db, err := gcpLoginRead()
+	err2 := db.Ping()
 	if err != nil || err2 != nil {
 		//get AWS host
-		awsdb, awserr = awsLoginRead()
-		awserr2 = awsdb.Ping()
+		awsdb, awserr := awsLoginRead()
+		awserr2 := awsdb.Ping()
 		if awserr != nil || awserr2 != nil {
 			panic(awserr)
 		}
@@ -82,6 +81,9 @@ func dbLoginread() *sql.DB {
 
 }
 
+
+
+//deleted test select function
 func dbLogin() (*sql.DB, *sql.DB) {
 	port, _ := strconv.Atoi(os.Getenv("PORT"))
 	psqlInfo := fmt.Sprintf(
