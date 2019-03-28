@@ -6,15 +6,17 @@ import (
 	"net/http"
 	"bytes"
 	"encoding/json"
+	"strings"
 )
 
 const CARS_ROUTE string = "cars/"
 
 func createCar(carObj Car) Car {
 	if !s.IsLeader() {
-		leaderIP := s.GetLeaderAddress() + ":8888"
+//		"http://" + strings.Split(s.GetLeaderAddress(), ":")[0] + ":8888/"
+		leaderIP := "http://" + strings.Split(s.GetLeaderAddress(), ":")[0] + ":8888/"
 		url := leaderIP + CARS_ROUTE
-
+		fmt.Println(url)
 		jsonStr, _ := json.Marshal(carObj)
 		req, _ := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
 		client := &http.Client{}
