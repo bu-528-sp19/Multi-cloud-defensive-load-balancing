@@ -1,25 +1,37 @@
 package main
 
-import "time"
+import (
+	"time"
+	"fmt"
+)
 
 func createReservation(reservationObj Reservation) Reservation {
-	db := dbLogin()
-	defer db.Close()
-
 	time_layout := "2006-01-02T15:04:05.000Z"
 	start, _ := time.Parse(time_layout, reservationObj.StartTime)
 	end, _ := time.Parse(time_layout, reservationObj.EndTime)
-	row, err := db.Query(
+
+	query := fmt.Sprintf(
 		"INSERT INTO reservations (start_time, end_time, car_id, garage_id) "+
-		"VALUES($1, $2, $3, $4) "+
-		"RETURNING id",
+			"VALUES('%s', '%s', %d, %d) "+
+			"RETURNING id",
 		start,
 		end,
 		reservationObj.CarID,
 		reservationObj.GarageID)
+	
+	s.Set(time.Now().String(), query)
+
+	db,db2 := dbLogin()
+	defer db.Close()
+	defer db2.Close()
+	row, err := db.Query(query)
+	_, err2 := db2.Query(query)
 
 	if err != nil {
 		panic(err)
+	}
+	if err2 != nil {
+		panic(err2)
 	}
 
 	row.Next()
@@ -35,7 +47,7 @@ func createReservation(reservationObj Reservation) Reservation {
 }
 
 func getReservationsForUser(userID int) []Reservation {
-	db := dbLogin()
+	db := dbLoginread()
 	defer db.Close()
 
 	rows, err := db.Query(
@@ -67,7 +79,7 @@ func getReservationsForUser(userID int) []Reservation {
 }
 
 func getReservationsForGarage(garageID int) []Reservation {
-	db := dbLogin()
+	db := dbLoginread()
 	defer db.Close()
 
 	rows, err := db.Query(
@@ -96,7 +108,7 @@ func getReservationsForGarage(garageID int) []Reservation {
 }
 
 func getReservationForCar(carID int) (Reservation) {
-	db := dbLogin()
+	db := dbLoginread()
 	defer db.Close()
 
 	rows, err :=  db.Query(
@@ -121,7 +133,7 @@ func getReservationForCar(carID int) (Reservation) {
 }
 
 func getReservations() ([]Reservation) {
-	db := dbLogin()
+	db := dbLoginread()
 	defer db.Close()
 
 	rows, err := db.Query("SELECT * FROM reservations")
@@ -147,7 +159,7 @@ func getReservations() ([]Reservation) {
 }
 
 func getReservation(reservationID int) (Reservation) {
-	db := dbLogin()
+	db := dbLoginread()
 	defer db.Close()
 
 	rows, err := db.Query(
@@ -172,14 +184,22 @@ func getReservation(reservationID int) (Reservation) {
 }
 
 func deleteReservation(reservationID int) {
-	db := dbLogin()
+	db,db2 := dbLogin()
 	defer db.Close()
+	defer db2.Close()
 
 	_, err := db.Query(
 		"DELETE FROM reservations WHERE reservations.id = $1",
 		reservationID)
 
+	_, err2 := db2.Query(
+		"DELETE FROM reservations WHERE reservations.id = $1",
+		reservationID)
+
 	if err != nil {
 		panic(err)
+	}
+	if err2 != nil {
+		panic(err2)
 	}
 }

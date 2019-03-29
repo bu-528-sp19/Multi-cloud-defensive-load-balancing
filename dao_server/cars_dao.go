@@ -3,29 +3,55 @@ package main
 import (
 	"time"
 	"fmt"
-//	"strconv"
+	"net/http"
+	"bytes"
+	"encoding/json"
+	"strings"
 )
 
+const CARS_ROUTE string = "cars/"
+
 func createCar(carObj Car) Car {
+	if !s.IsLeader() {
+//		"http://" + strings.Split(s.GetLeaderAddress(), ":")[0] + ":8888/"
+		leaderIP := "http://" + strings.Split(s.GetLeaderAddress(), ":")[0] + ":8888/"
+		url := leaderIP + CARS_ROUTE
+		fmt.Println(url)
+		jsonStr, _ := json.Marshal(carObj)
+		req, _ := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
+		client := &http.Client{}
+		resp, _ := client.Do(req)
+		defer resp.Body.Close()
+		_ = json.NewDecoder(resp.Body).Decode(&carObj)
+		return carObj
+	}
+
 	query := fmt.Sprintf(
 		"INSERT INTO cars (user_id, model) "+
-		"VALUES (%d, '%s') RETURNING id;",
-		carObj.UserID, carObj.Model)
+			"VALUES (%d, '%s') RETURNING id;",
+		carObj.UserID,
+		carObj.Model)
 
 	s.Set(time.Now().String(), query)
 
-	db := dbLogin()
+	//db := dbLogin() // dbLogin now returns both
+	db,db2 := dbLogin()
 	defer  db.Close()
-
+	defer  db2.Close()
 	row, err := db.Query(query)
+	_, err2 := db2.Query(query)
 
 	if err != nil {
 		panic (err)
+	}
+	if err2 != nil {
+		panic (err2)
 	}
 
 	row.Next()
 	var newID int
 	scanErr := row.Scan(&newID)
+
 
 	if scanErr != nil {
 		panic(scanErr)
@@ -36,7 +62,7 @@ func createCar(carObj Car) Car {
 }
 
 func getCarsForUser(userID int) ([]Car) {
-	db := dbLogin()
+	db := dbLoginread() //now dbLoginread instead of dbLogin
 	defer db.Close()
 
 	rows, err := db.Query(
@@ -60,7 +86,7 @@ func getCarsForUser(userID int) ([]Car) {
 }
 
 func getCar(carID int) (Car) {
-	db := dbLogin()
+	db := dbLoginread()
 	defer db.Close()
 
 	rows, err := db.Query(
@@ -82,7 +108,7 @@ func getCar(carID int) (Car) {
 }
 
 func getCars() ([]Car) {
-	db := dbLogin()
+	db := dbLoginread()
 	defer db.Close()
 	rows, err := db.Query("SELECT * FROM cars")
 
@@ -102,14 +128,21 @@ func getCars() ([]Car) {
 }
 
 func deleteCar(carID int) {
-	db := dbLogin()
+	db,db2 := dbLogin()
 	defer db.Close()
+	defer db2.Close()
 
 	_, err := db.Query(
+		"DELETE FROM cars WHERE cars.id = $1",
+		carID)
+	_, err2 := db2.Query(
 		"DELETE FROM cars WHERE cars.id = $1",
 		carID)
 
 	if err != nil {
 		panic (err)
+	}
+	if err2 != nil {
+		panic (err2)
 	}
 }
