@@ -64,12 +64,15 @@ func notify_leader(db_name string, val string) () {
 //used by any node for database forwarding
 func db_recover(db *sql.DB, down_time string) (){
   m := s.GetAll()
+  s.Locklog()
+  defer s.Unlocklog()
+  fmt.Println("down time =", down_time)
   for key, query := range m {
     fmt.Println(key, query)
     if key != "AWS_DOWN" && compare_times(key, down_time) > 0 {
       //if entry was committed to log after db went down, execute query
       fmt.Println("execute", query)
-      //db.Query(query)
+      _, _ = db.Query(query)
     }
   }
 }
@@ -77,10 +80,8 @@ func db_recover(db *sql.DB, down_time string) (){
 func compare_times(log_time string, down_time string) (int) {
   x, _ := strconv.ParseInt(log_time, 10, 64)
   y, _ := strconv.ParseInt(down_time, 10, 64)
-  if x > y {
+  if x >= y {
     return 1
-  } else{
-    return 0
   }
   return 0
 }
@@ -115,7 +116,7 @@ func dbForwarding(db *sql.DB, db_name string) (error){
   				}
   				db_recover(db, down_time)
   			}
-        db_recover(db, down_time) //for debugging
+        //db_recover(db, down_time) //for debugging
   	}
     return err
 }
@@ -147,8 +148,8 @@ func awsLogin() (*sql.DB, error) {
 	port, _ := strconv.Atoi(os.Getenv("PORT"))
 	psqlInfoAWS := fmt.Sprintf(
 		"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-		"postgres.cefcqioy9fiv.us-east-1.rds.amazonaws.com",//s.Getenv("HOSTAWS"),
-		port
+		os.Getenv("HOSTAWS"),
+		port,
 		os.Getenv("USER"),
 		os.Getenv("PASSWORDAWS"),
 		os.Getenv("NAME"))
@@ -168,13 +169,13 @@ func awsLogin() (*sql.DB, error) {
 
 
 func dbLoginread() (*sql.DB, error) {
-	db, err := awsLogin()
-  err = dbForwarding(db, "AWS_DOWN")
+	db, _ := awsLogin()
+  err := dbForwarding(db, "AWS_DOWN")
   if err == nil {
       return db, err
   }
 
-  //db, err = gcpLogin()
+  //db, _ = gcpLogin()
   //err = dbForwarding(db, "GCP_DOWN")
 
   return db, err
@@ -182,17 +183,17 @@ func dbLoginread() (*sql.DB, error) {
 
 func dbLogin() ([]*sql.DB) {
 
-	//dbGCP, errgcp := gcpLogin()
-  dbAWS, erraws := awsLogin()
+	//dbGCP, _ := gcpLogin()
+  dbAWS, _ := awsLogin()
   var working_dbs []*sql.DB
 
   err := dbForwarding(dbAWS, "AWS_DOWN")
-  if err == nil && erraws == nil {
+  if err == nil {
     working_dbs = append(working_dbs, dbAWS)
   }
 
   /*err = dbForwarding(dbGCP, "GCP_DOWN")
-  if err == nil && errgcp == nil{
+  if err == nil {
     working_dbs = append(working_dbs, dbAWS)
   }*/
 

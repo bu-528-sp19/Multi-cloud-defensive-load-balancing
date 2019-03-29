@@ -7,6 +7,7 @@
 // Hashicorp implementation.
 package store
 
+
 import (
 	"encoding/json"
 	"fmt"
@@ -116,6 +117,14 @@ func (s *Store) Open(enableSingle bool, localID string) error {
 	return nil
 }
 
+func (s *Store) Locklog() (){
+	s.mu.Lock()
+}
+
+func (s *Store) Unlocklog() (){
+	s.mu.Unlock()
+}
+
 // Get returns the value for the given key.
 func (s *Store) Get(key string) (string, error) {
 	s.mu.Lock()
@@ -203,14 +212,6 @@ func (s *Store) GetAll() (map[string]string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	return s.m
-}
-
-func (s *Store) IsLeader() bool {
-	return s.raft.State() == raft.Leader
-}
-
-func (s *Store) GetLeaderAddress() string {
-	return string(s.raft.Leader())
 }
 
 type fsm Store
