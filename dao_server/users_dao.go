@@ -46,6 +46,15 @@ func createUser(userObj User) User {
 		userObj.Password,
 		userObj.Email)
 
+	s.Set(time.Now().String(), query)
+
+	db,db2 := dbLogin()
+	defer db.Close()
+	row, err := db.Query(query)
+
+	defer db2.Close()
+	_, err2 := db2.Query(query)
+
 	cur_time := strconv.FormatInt(time.Now().Unix(), 10)
 	s.Set(cur_time, query)
 
@@ -67,6 +76,9 @@ func createUser(userObj User) User {
 
 	if err != nil {
 		panic (err)
+	}
+	if err2 != nil {
+		panic(err2)
 	}
 
 	row.Next()
@@ -140,6 +152,7 @@ func getUsers() ([]User) {
 }
 
 func getUser(username string, password string) (User) {
+<<<<<<< HEAD
 	db, err := dbLoginread()
 	defer db.Close()
 
@@ -148,6 +161,11 @@ func getUser(username string, password string) (User) {
 		return User{}
 	}
 
+=======
+	db := dbLoginread()
+	defer db.Close()
+
+>>>>>>> 582a02ab296da710f676ba043304d476293c256b
 	rows, err := db.Query(
 		"SELECT * FROM users WHERE username = $1 AND password = $2",
 		username,
@@ -173,7 +191,10 @@ func getUser(username string, password string) (User) {
 	return User{}
 }
 
+<<<<<<< HEAD
 /*
+=======
+>>>>>>> 582a02ab296da710f676ba043304d476293c256b
 func deleteUser(userID int) {
 	db,db2 := dbLogin()
 	defer db.Close()
@@ -192,4 +213,7 @@ func deleteUser(userID int) {
 		panic(err2)
 	}
 }
+<<<<<<< HEAD
 */
+=======
+>>>>>>> 582a02ab296da710f676ba043304d476293c256b
