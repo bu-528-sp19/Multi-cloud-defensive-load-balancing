@@ -3,6 +3,7 @@ package main
 import (
 	"time"
 	"fmt"
+	"strconv"
 	"net/http"
 	"bytes"
 	"encoding/json"
@@ -26,20 +27,36 @@ func createCar(carObj Car) Car {
 		return carObj
 	}
 
+	num_dbs := 0
+	dbs := dbLogin()
+	for _, db := range dbs {
+		num_dbs = num_dbs + 1
+		defer  db.Close()
+	}
 	query := fmt.Sprintf(
 		"INSERT INTO cars (user_id, model) "+
 			"VALUES (%d, '%s') RETURNING id;",
 		carObj.UserID,
 		carObj.Model)
 
-	s.Set(time.Now().String(), query)
+	cur_time := strconv.FormatInt(time.Now().Unix(), 10)
+	s.Set(cur_time, query)
 
-	//db := dbLogin() // dbLogin now returns both
-	db,db2 := dbLogin()
-	defer  db.Close()
-	defer  db2.Close()
-	row, err := db.Query(query)
-	_, err2 := db2.Query(query)
+	if num_dbs == 0 {
+		return carObj
+	}
+
+	//execute queries to all dbs except the last one
+	var i int
+	for i = 0; i < num_dbs - 1; i++ {
+		_, err := dbs[i].Query(query)
+		if err != nil {
+			panic (err)
+		}
+	}
+
+	//only get data from last query
+	row, err := dbs[len(dbs) - 1].Query(query)
 
 	if err != nil {
 		panic (err)
@@ -61,15 +78,23 @@ func createCar(carObj Car) Car {
 	return carObj
 }
 
+
+
 func getCarsForUser(userID int) ([]Car) {
-	db := dbLoginread() //now dbLoginread instead of dbLogin
+	db, err := dbLoginread()
 	defer db.Close()
+
+	var userCars []Car
+	//return no dbs working
+	if err != nil {
+		return userCars
+	}
 
 	rows, err := db.Query(
 		"SELECT * FROM cars WHERE user_id = $1",
 		userID)
 
-	var userCars []Car
+	//var userCars []Car
 	for rows.Next() {
 		var id int
 		var user_id int
@@ -85,9 +110,16 @@ func getCarsForUser(userID int) ([]Car) {
 	return userCars
 }
 
+
+
 func getCar(carID int) (Car) {
-	db := dbLoginread()
+	db, err := dbLoginread()
 	defer db.Close()
+
+	//return no dbs working
+	if err != nil {
+		return Car{}
+	}
 
 	rows, err := db.Query(
 		"SELECT * FROM cars WHERE id = $1",
@@ -108,11 +140,17 @@ func getCar(carID int) (Car) {
 }
 
 func getCars() ([]Car) {
-	db := dbLoginread()
+	db, err := dbLoginread()
 	defer db.Close()
-	rows, err := db.Query("SELECT * FROM cars")
 
 	var allCars []Car
+	if err != nil{
+		return allCars
+	}
+
+	rows, err := db.Query("SELECT * FROM cars")
+
+	//var allCars []Car
 	for rows.Next() {
 		var id int
 		var user_id int

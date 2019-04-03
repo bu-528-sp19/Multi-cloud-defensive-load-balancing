@@ -1,3 +1,4 @@
+
 package main
 
 import (
@@ -43,12 +44,10 @@ func createUser(userObj User) User {
 }
 
 func getUserById(userID int) (User) {
-	db := dbLoginread()
+	db, _ := dbLoginread()
 	defer db.Close()
 
-	rows, err := db.Query(
-		"SELECT * FROM users WHERE id = $1",
-		userID)
+	rows, err := db.Query("SELECT * FROM users WHERE id = $1", userID)
 
 	for rows.Next() {
 		var id int
@@ -68,7 +67,7 @@ func getUserById(userID int) (User) {
 }
 
 func getUsers() ([]User) {
-	db := dbLoginread()
+	db, _ := dbLoginread()
 	defer db.Close()
 
 	rows, err := db.Query("SELECT * FROM users")
