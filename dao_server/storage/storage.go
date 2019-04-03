@@ -7,6 +7,7 @@
 // Hashicorp implementation.
 package store
 
+
 import (
 	"encoding/json"
 	"fmt"
@@ -114,6 +115,14 @@ func (s *Store) Open(enableSingle bool, localID string) error {
 	}
 
 	return nil
+}
+
+func (s *Store) Locklog() (){
+	s.mu.Lock()
+}
+
+func (s *Store) Unlocklog() (){
+	s.mu.Unlock()
 }
 
 // Get returns the value for the given key.
