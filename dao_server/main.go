@@ -74,6 +74,8 @@ func main() {
 	// History route handler & endpoint
 	router.HandleFunc("/history/", GetHistory).Methods("GET")
 
+	router.HandleFunc("/db_state_change", DB_State_Change).Methods("POST")
+
 	router.HandleFunc("/join", handleRaftJoinRequest).Methods("POST")
 	router.HandleFunc("/join/", handleRaftJoinRequest).Methods("POST")
 	router.HandleFunc("/raft-dump", handleRaftDump).Methods("GET")

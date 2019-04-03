@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"bytes"
 	"encoding/json"
+	//"strings"
 )
 
 const CARS_ROUTE string = "cars/"
@@ -16,9 +17,10 @@ func createCar(carObj Car) Car {
 	isLeader := true
 
 	if isLeader == false { //!s.IsLeader() {
-		leaderIP := "localhost:8888"//s.GetLeaderAddress() + ":8888"
+		//		"http://" + strings.Split(s.GetLeaderAddress(), ":")[0] + ":8888/"
+		leaderIP := "localhost:8888"//"http://" + strings.Split(s.GetLeaderAddress(), ":")[0] + ":8888/"
 		url := leaderIP + CARS_ROUTE
-
+		//fmt.Println(url)
 		jsonStr, _ := json.Marshal(carObj)
 		req, _ := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
 		client := &http.Client{}
@@ -162,11 +164,3 @@ func getCars() ([]Car) {
 	}
 	return allCars
 }
-
-/*
-create table cars (
-id serial PRIMARY KEY,
-user_id integer NOT NULL,
-model varchar (50),
-constraint cars_user_id_fkey FOREIGN KEY (user_id) references users (id) match simple on update no action on delete no action);
-*/
