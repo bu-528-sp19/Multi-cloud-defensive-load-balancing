@@ -3,29 +3,72 @@ package main
 import (
 	"time"
 	"fmt"
-//	"strconv"
+	"strconv"
+	"net/http"
+	"bytes"
+	"encoding/json"
+	"strings"
 )
 
+const CARS_ROUTE string = "cars/"
+
 func createCar(carObj Car) Car {
+	if !s.IsLeader() {
+//		"http://" + strings.Split(s.GetLeaderAddress(), ":")[0] + ":8888/"
+		leaderIP := "http://" + strings.Split(s.GetLeaderAddress(), ":")[0] + ":8888/"
+		url := leaderIP + CARS_ROUTE
+		fmt.Println(url)
+		jsonStr, _ := json.Marshal(carObj)
+		req, _ := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
+		client := &http.Client{}
+		resp, _ := client.Do(req)
+		defer resp.Body.Close()
+		_ = json.NewDecoder(resp.Body).Decode(&carObj)
+		return carObj
+	}
+
+	num_dbs := 0
+	dbs := dbLogin()
+	for _, db := range dbs {
+		num_dbs = num_dbs + 1
+		defer  db.Close()
+	}
 	query := fmt.Sprintf(
 		"INSERT INTO cars (user_id, model) "+
-		"VALUES (%d, '%s') RETURNING id;",
-		carObj.UserID, carObj.Model)
+			"VALUES (%d, '%s') RETURNING id;",
+		carObj.UserID,
+		carObj.Model)
 
-	s.Set(time.Now().String(), query)
+	cur_time := strconv.FormatInt(time.Now().Unix(), 10)
+	s.Set(cur_time, query)
 
-	db := dbLogin()
-	defer  db.Close()
+	if num_dbs == 0 {
+		return carObj
+	}
 
-	row, err := db.Query(query)
+	//execute queries to all dbs except the last one
+	var i int
+	for i = 0; i < num_dbs - 1; i++ {
+		_, err := dbs[i].Query(query)
+		if err != nil {
+			panic (err)
+		}
+	}
+
+	//only get data from last query
+	row, err := dbs[len(dbs) - 1].Query(query)
 
 	if err != nil {
 		panic (err)
+	}
+	if err2 != nil {
+		panic (err2)
 	}
 
 	row.Next()
 	var newID int
 	scanErr := row.Scan(&newID)
+
 
 	if scanErr != nil {
 		panic(scanErr)
@@ -35,15 +78,23 @@ func createCar(carObj Car) Car {
 	return carObj
 }
 
+
+
 func getCarsForUser(userID int) ([]Car) {
-	db := dbLogin()
+	db, err := dbLoginread()
 	defer db.Close()
+
+	var userCars []Car
+	//return no dbs working
+	if err != nil {
+		return userCars
+	}
 
 	rows, err := db.Query(
 		"SELECT * FROM cars WHERE user_id = $1",
 		userID)
 
-	var userCars []Car
+	//var userCars []Car
 	for rows.Next() {
 		var id int
 		var user_id int
@@ -59,9 +110,16 @@ func getCarsForUser(userID int) ([]Car) {
 	return userCars
 }
 
+
+
 func getCar(carID int) (Car) {
-	db := dbLogin()
+	db, err := dbLoginread()
 	defer db.Close()
+
+	//return no dbs working
+	if err != nil {
+		return Car{}
+	}
 
 	rows, err := db.Query(
 		"SELECT * FROM cars WHERE id = $1",
@@ -82,11 +140,17 @@ func getCar(carID int) (Car) {
 }
 
 func getCars() ([]Car) {
-	db := dbLogin()
+	db, err := dbLoginread()
 	defer db.Close()
-	rows, err := db.Query("SELECT * FROM cars")
 
 	var allCars []Car
+	if err != nil{
+		return allCars
+	}
+
+	rows, err := db.Query("SELECT * FROM cars")
+
+	//var allCars []Car
 	for rows.Next() {
 		var id int
 		var user_id int
@@ -102,14 +166,21 @@ func getCars() ([]Car) {
 }
 
 func deleteCar(carID int) {
-	db := dbLogin()
+	db,db2 := dbLogin()
 	defer db.Close()
+	defer db2.Close()
 
 	_, err := db.Query(
+		"DELETE FROM cars WHERE cars.id = $1",
+		carID)
+	_, err2 := db2.Query(
 		"DELETE FROM cars WHERE cars.id = $1",
 		carID)
 
 	if err != nil {
 		panic (err)
+	}
+	if err2 != nil {
+		panic (err2)
 	}
 }
