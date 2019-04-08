@@ -36,7 +36,7 @@ func main() {
 	router.HandleFunc("/reservations/", CreateReservation).Methods("POST")
 	router.HandleFunc("/reservations", CreateReservation).Methods("POST")
 	//router.HandleFunc("/reservations/{id}", UpdateReservation).Methods("PUT")
-	router.HandleFunc("/reservations/{id}", DeleteReservation).Methods("DELETE")
+	//router.HandleFunc("/reservations/{id}", DeleteReservation).Methods("DELETE")
 	router.HandleFunc("/reservations-by-user/{id}", GetReservationsByUser).Methods("GET")
 
 	// Users route handles & endpoints
@@ -46,7 +46,7 @@ func main() {
 	router.HandleFunc("/users", CreateUser).Methods("POST")
 	router.HandleFunc("/users/", CreateUser).Methods("POST")
 	//router.HandleFunc("/users/{id}", UpdateUser).Methods("PUT")
-	router.HandleFunc("/users/{id}", DeleteUser).Methods("DELETE")
+	//router.HandleFunc("/users/{id}", DeleteUser).Methods("DELETE")
 
 	// Garages route handles & endpoints
 	router.HandleFunc("/garages", GetGarages).Methods("GET")
@@ -55,7 +55,7 @@ func main() {
 	router.HandleFunc("/garages/", CreateGarage).Methods("POST")
 	router.HandleFunc("/garages", CreateGarage).Methods("POST")
 	//router.HandleFunc("/garages/{id}", UpdateGarage).Methods("PUT")
-	router.HandleFunc("/garages/{id}", DeleteGarage).Methods("DELETE")
+	//.HandleFunc("/garages/{id}", DeleteGarage).Methods("DELETE")
 
 	// Cars route handles & endpoints
 	router.HandleFunc("/cars", GetCars).Methods("GET")
@@ -65,7 +65,7 @@ func main() {
 	router.HandleFunc("/cars/", CreateCar).Methods("POST")
 	router.HandleFunc("/get-cars-by-user/{id}", GetCarsByUser).Methods("GET")
 	//router.HandleFunc("/cars/{id}", UpdateCar).Methods("PUT")
-	router.HandleFunc("/cars/{id}", DeleteCar).Methods("DELETE")
+	//router.HandleFunc("/cars/{id}", DeleteCar).Methods("DELETE")
 
 	//get car.jpg from aws s3 bucket
 	//router.HandleFunc("/carpics", GetCarPics).Methods("GET")
