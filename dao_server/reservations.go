@@ -54,14 +54,14 @@ func CreateReservation(w http.ResponseWriter, req *http.Request) {
 	json.NewEncoder(w).Encode(reservation)
 }
 
-func DeleteReservation(w http.ResponseWriter, req *http.Request) {
+/*func DeleteReservation(w http.ResponseWriter, req *http.Request) {
 	(w).Header().Set("Access-Control-Allow-Origin", "*")
 	params := mux.Vars(req)
 	id, _ := strconv.Atoi(params["id"])
 	deleteReservation(id)
 }
 
-/*func UpdateReservation(w http.ResponseWriter, r *http.Request) {
+func UpdateReservation(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	params := mux.Vars(r)
 	for index, item := range reservations {

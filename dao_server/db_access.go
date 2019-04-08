@@ -27,6 +27,7 @@ type DatabaseInfo struct {
 	Port     int
 }
 
+
 ///////////////////////////////////////////////////
 //Database Forwarding
 
@@ -120,6 +121,7 @@ func dbForwarding(db *sql.DB, db_name string) (error){
     return err
 }
 ///////////////////////////////////////////////////
+
 func gcpLogin() (*sql.DB, error) {
 	port, _ := strconv.Atoi(os.Getenv("PORT"))
 	psqlInfo := fmt.Sprintf(
@@ -129,8 +131,7 @@ func gcpLogin() (*sql.DB, error) {
 		os.Getenv("USER"),
 		os.Getenv("PASSWORD"),
 		os.Getenv("NAME"))
-	//db, err := sql.Open("postgres", psqlInfo)//err declared and not used
-	db, _ := sql.Open("postgres", psqlInfo)
+	db, err := sql.Open("postgres", psqlInfo)
 
 	if err != nil {
 		return db, err
@@ -152,7 +153,7 @@ func awsLogin() (*sql.DB, error) {
 		os.Getenv("USER"),
 		os.Getenv("PASSWORDAWS"),
 		os.Getenv("NAME"))
-	  dbAWS, errAWS := sql.Open("postgres", psqlInfoAWS)
+	dbAWS, errAWS := sql.Open("postgres", psqlInfoAWS)
 
 	if errAWS != nil {
 		return dbAWS, errAWS
