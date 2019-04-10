@@ -7,18 +7,18 @@ import (
 	"net/http"
 	"bytes"
 	"encoding/json"
-	//"strings"
+	"strings"
 )
 
 const CARS_ROUTE string = "cars/"
 
 func createCar(carObj Car) Car {
 
-	isLeader := true
+	//isLeader := true
 
-	if isLeader == false { //!s.IsLeader() {
+	if !s.IsLeader() {
 		//		"http://" + strings.Split(s.GetLeaderAddress(), ":")[0] + ":8888/"
-		leaderIP := "localhost:8888"//"http://" + strings.Split(s.GetLeaderAddress(), ":")[0] + ":8888/"
+		leaderIP := "http://" + strings.Split(s.GetLeaderAddress(), ":")[0] + ":8888/"
 		url := leaderIP + CARS_ROUTE
 		//fmt.Println(url)
 		jsonStr, _ := json.Marshal(carObj)
