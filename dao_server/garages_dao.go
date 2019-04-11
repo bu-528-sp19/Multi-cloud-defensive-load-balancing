@@ -14,11 +14,15 @@ const GARAGES_ROUTE string = "garages/"
 
 func createGarage(garageObj Garage) Garage {
 
-  //isLeader := true
+	//local server
+	/*isLeader := true
+	if isLeader == false { //!s.IsLeader() {
+		leaderIP := "localhost:8888"*/
 
+	//cloud server
 	if !s.IsLeader() {
-		//		"http://" + strings.Split(s.GetLeaderAddress(), ":")[0] + ":8888/"
 		leaderIP := "http://" + strings.Split(s.GetLeaderAddress(), ":")[0] + ":8888/"
+		
 		url := leaderIP + GARAGES_ROUTE
 		//fmt.Println(url)
 		jsonStr, _ := json.Marshal(garageObj)

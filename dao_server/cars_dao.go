@@ -14,11 +14,15 @@ const CARS_ROUTE string = "cars/"
 
 func createCar(carObj Car) Car {
 
-	//isLeader := true
+	//local server
+	/*isLeader := true
+	if isLeader == false { //!s.IsLeader() {
+		leaderIP := "localhost:8888"*/
 
+	//cloud server
 	if !s.IsLeader() {
-		//		"http://" + strings.Split(s.GetLeaderAddress(), ":")[0] + ":8888/"
 		leaderIP := "http://" + strings.Split(s.GetLeaderAddress(), ":")[0] + ":8888/"
+
 		url := leaderIP + CARS_ROUTE
 		//fmt.Println(url)
 		jsonStr, _ := json.Marshal(carObj)
