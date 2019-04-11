@@ -49,9 +49,13 @@ func DB_State_Change(w http.ResponseWriter, req *http.Request) {
 //used by non-leader to notify leader of db state change
 func notify_leader(db_name string, val string) () {
   fmt.Println("need to notify leader that " + db_name + " is down")
-  leaderIP := "localhost:8888"//s.GetLeaderAddress() + ":8888"
-  url := leaderIP + "/db_state_change"
+  //local server
+  //leaderIP := "localhost:8888"
 
+  //cloud server
+  leaderIP := s.GetLeaderAddress() + ":8888"
+
+  url := leaderIP + "/db_state_change"
   db_state_obj := DB_STATE{Name: db_name, State: val}
   jsonStr, _ := json.Marshal(db_state_obj)
   req, _ := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
@@ -89,8 +93,11 @@ func compare_times(log_time string, down_time string) (int) {
 
 func dbForwarding(db *sql.DB, db_name string) (error){
 
-    //change for cloud server
-    isLeader := true
+    //local server
+    //isLeader := true
+
+    //cloud server
+    isLeader := s.IsLeader()
 
     if len(s.GetAll()) == 0 {
   		s.Set("AWS_DOWN", "0")
