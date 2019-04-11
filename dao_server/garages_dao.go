@@ -22,7 +22,7 @@ func createGarage(garageObj Garage) Garage {
 	//cloud server
 	if !s.IsLeader() {
 		leaderIP := "http://" + strings.Split(s.GetLeaderAddress(), ":")[0] + ":8888/"
-		
+
 		url := leaderIP + GARAGES_ROUTE
 		//fmt.Println(url)
 		jsonStr, _ := json.Marshal(garageObj)
