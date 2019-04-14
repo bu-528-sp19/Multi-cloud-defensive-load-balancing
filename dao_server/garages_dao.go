@@ -3,9 +3,44 @@ package main
 import (
 	"time"
 	"fmt"
+	"strconv"
+	"net/http"
+	"bytes"
+	"encoding/json"
+	"strings"
 )
 
+const GARAGES_ROUTE string = "garages/"
+
 func createGarage(garageObj Garage) Garage {
+
+	//local server
+	/*isLeader := true
+	if isLeader == false { //!s.IsLeader() {
+		leaderIP := "localhost:8888"*/
+
+	//cloud server
+	if !s.IsLeader() {
+		leaderIP := "http://" + strings.Split(s.GetLeaderAddress(), ":")[0] + ":8888/"
+
+		url := leaderIP + GARAGES_ROUTE
+		//fmt.Println(url)
+		jsonStr, _ := json.Marshal(garageObj)
+		req, _ := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
+		client := &http.Client{}
+		resp, _ := client.Do(req)
+		defer resp.Body.Close()
+		_ = json.NewDecoder(resp.Body).Decode(&garageObj)
+		return garageObj
+	}
+
+  num_dbs := 0
+	dbs := dbLogin()
+	for _, db := range dbs {
+		num_dbs = num_dbs + 1
+		defer  db.Close()
+	}
+
 	query := fmt.Sprintf(
 		"INSERT INTO garages (name, max_cars) "+
 			"VALUES('%s', %d) "+
@@ -13,40 +48,52 @@ func createGarage(garageObj Garage) Garage {
 		garageObj.Name,
 		garageObj.MaxCars)
 
-	s.Set(time.Now().String(), query)
+  cur_time := strconv.FormatInt(time.Now().Unix(), 10)
+	s.Set(cur_time, query)
 
-	db,db2 := dbLogin()
-	defer db.Close()
-	defer db2.Close()
-	row, err := db.Query(query)
-	_, err2 := db.Query(query)
-
-
-	if err != nil {
-		panic (err)
-	}
-	if err2 != nil {
-		panic (err2)
+  if num_dbs == 0 {
+		return garageObj
 	}
 
-	row.Next()
-	var newID int
-	scanErr := row.Scan(&newID)
+  //execute queries to all dbs except the last one
+  var i int
+  for i = 0; i < num_dbs - 1; i++ {
+    _, err := dbs[i].Query(query)
+    if err != nil {
+      panic (err)
+    }
+  }
 
-	if scanErr != nil {
-		panic(scanErr)
-	}
+  //only get data from last query
+  row, err := dbs[len(dbs) - 1].Query(query)
+
+  if err != nil {
+    panic (err)
+  }
+
+  row.Next()
+  var newID int
+  scanErr := row.Scan(&newID)
+
+  if scanErr != nil {
+    panic(scanErr)
+  }
 
 	garageObj.ID = newID
 	return garageObj
 }
 
 func getGarages() ([]Garage) {
-	db := dbLoginread()
+  db, err := dbLoginread()
 	defer db.Close()
 
-	rows, _ := db.Query("SELECT * FROM garages")
 	var garages []Garage
+	//return no dbs working
+	if err != nil {
+		return garages
+	}
+
+	rows, _ := db.Query("SELECT * FROM garages")
 
 	for rows.Next() {
 		var name string
@@ -63,8 +110,13 @@ func getGarages() ([]Garage) {
 }
 
 func getGarage(garageID int) (Garage) {
-	db := dbLoginread()
+  db, err := dbLoginread()
 	defer db.Close()
+
+	//return no dbs working
+	if err != nil {
+		return Garage{}
+	}
 
 	rows, err := db.Query(
 		"SELECT * FROM garages WHERE id = $1",
@@ -89,6 +141,7 @@ func getGarage(garageID int) (Garage) {
 	return Garage{}
 }
 
+/*
 func deleteGarage(garageID int) {
 	db,db2 := dbLogin()
 	defer db.Close()
@@ -108,3 +161,4 @@ func deleteGarage(garageID int) {
 		panic(err2)
 	}
 }
+*/

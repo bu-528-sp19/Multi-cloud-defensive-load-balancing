@@ -13,11 +13,18 @@ import (
 const CARS_ROUTE string = "cars/"
 
 func createCar(carObj Car) Car {
+
+	//local server
+	/*isLeader := true
+	if isLeader == false { //!s.IsLeader() {
+		leaderIP := "localhost:8888"*/
+
+	//cloud server
 	if !s.IsLeader() {
-//		"http://" + strings.Split(s.GetLeaderAddress(), ":")[0] + ":8888/"
 		leaderIP := "http://" + strings.Split(s.GetLeaderAddress(), ":")[0] + ":8888/"
+
 		url := leaderIP + CARS_ROUTE
-		fmt.Println(url)
+		//fmt.Println(url)
 		jsonStr, _ := json.Marshal(carObj)
 		req, _ := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
 		client := &http.Client{}
@@ -27,17 +34,18 @@ func createCar(carObj Car) Car {
 		return carObj
 	}
 
+
 	num_dbs := 0
 	dbs := dbLogin()
 	for _, db := range dbs {
 		num_dbs = num_dbs + 1
 		defer  db.Close()
 	}
+
 	query := fmt.Sprintf(
 		"INSERT INTO cars (user_id, model) "+
-			"VALUES (%d, '%s') RETURNING id;",
-		carObj.UserID,
-		carObj.Model)
+		"VALUES (%d, '%s') RETURNING id;",
+		carObj.UserID, carObj.Model)
 
 	cur_time := strconv.FormatInt(time.Now().Unix(), 10)
 	s.Set(cur_time, query)
@@ -61,14 +69,10 @@ func createCar(carObj Car) Car {
 	if err != nil {
 		panic (err)
 	}
-	if err2 != nil {
-		panic (err2)
-	}
 
 	row.Next()
 	var newID int
 	scanErr := row.Scan(&newID)
-
 
 	if scanErr != nil {
 		panic(scanErr)
@@ -163,24 +167,4 @@ func getCars() ([]Car) {
 		allCars = append(allCars, Car{ID: id, UserID: user_id, Model: model})
 	}
 	return allCars
-}
-
-func deleteCar(carID int) {
-	db,db2 := dbLogin()
-	defer db.Close()
-	defer db2.Close()
-
-	_, err := db.Query(
-		"DELETE FROM cars WHERE cars.id = $1",
-		carID)
-	_, err2 := db2.Query(
-		"DELETE FROM cars WHERE cars.id = $1",
-		carID)
-
-	if err != nil {
-		panic (err)
-	}
-	if err2 != nil {
-		panic (err2)
-	}
 }

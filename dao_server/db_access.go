@@ -27,6 +27,7 @@ type DatabaseInfo struct {
 	Port     int
 }
 
+
 ///////////////////////////////////////////////////
 //Database Forwarding
 
@@ -48,9 +49,13 @@ func DB_State_Change(w http.ResponseWriter, req *http.Request) {
 //used by non-leader to notify leader of db state change
 func notify_leader(db_name string, val string) () {
   fmt.Println("need to notify leader that " + db_name + " is down")
-  leaderIP := "localhost:8888"//s.GetLeaderAddress() + ":8888"
-  url := leaderIP + "/db_state_change"
+  //local server
+  //leaderIP := "localhost:8888"
 
+  //cloud server
+  leaderIP := s.GetLeaderAddress() + ":8888"
+
+  url := leaderIP + "/db_state_change"
   db_state_obj := DB_STATE{Name: db_name, State: val}
   jsonStr, _ := json.Marshal(db_state_obj)
   req, _ := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
@@ -61,16 +66,16 @@ func notify_leader(db_name string, val string) () {
 
 
 //used by any node for database forwarding
-func db_recover(db *sql.DB, down_time string) (){
+func db_recover(db *sql.DB, down_time string, db_name string) (){
   m := s.GetAll()
   s.Locklog()
   defer s.Unlocklog()
-  fmt.Println("down time =", down_time)
+  fmt.Println(db_name, "down time =", down_time)
   for key, query := range m {
     fmt.Println(key, query)
-    if key != "AWS_DOWN" && compare_times(key, down_time) > 0 {
+    if key != "AWS_DOWN" && key != "GCP_DOWN" && compare_times(key, down_time) > 0 {
       //if entry was committed to log after db went down, execute query
-      fmt.Println("execute", query)
+      fmt.Println("EXECUTE on ", db_name)
       _, _ = db.Query(query)
     }
   }
@@ -88,10 +93,15 @@ func compare_times(log_time string, down_time string) (int) {
 
 func dbForwarding(db *sql.DB, db_name string) (error){
 
-    isLeader := true
+    //local server
+    //isLeader := true
+
+    //cloud server
+    isLeader := s.IsLeader()
 
     if len(s.GetAll()) == 0 {
   		s.Set("AWS_DOWN", "0")
+      s.Set("GCP_DOWN", "0")
   	}
 
   	err := db.Ping()
@@ -113,24 +123,24 @@ func dbForwarding(db *sql.DB, db_name string) (error){
   				} else{
   					s.Set(db_name, "0")
   				}
-  				db_recover(db, down_time)
+  				db_recover(db, down_time, db_name)
   			}
         //db_recover(db, down_time) //for debugging
   	}
     return err
 }
 ///////////////////////////////////////////////////
+
 func gcpLogin() (*sql.DB, error) {
 	port, _ := strconv.Atoi(os.Getenv("PORT"))
 	psqlInfo := fmt.Sprintf(
 		"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-		os.Getenv("HOST"),
+		os.Getenv("HOSTGCP"),
 		port,
-		os.Getenv("USER"),
-		os.Getenv("PASSWORD"),
-		os.Getenv("NAME"))
-	//db, err := sql.Open("postgres", psqlInfo)//err declared and not used
-	db, _ := sql.Open("postgres", psqlInfo)
+		os.Getenv("USERGCP"),
+		os.Getenv("PASSWORDGCP"),
+		os.Getenv("NAMEGCP"))
+	db, err := sql.Open("postgres", psqlInfo)
 
 	if err != nil {
 		return db, err
@@ -147,12 +157,12 @@ func awsLogin() (*sql.DB, error) {
 	port, _ := strconv.Atoi(os.Getenv("PORT"))
 	psqlInfoAWS := fmt.Sprintf(
 		"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-		os.Getenv("HOSTAWS"),
+	  os.Getenv("HOSTAWS"),
 		port,
-		os.Getenv("USER"),
+		os.Getenv("USERAWS"),
 		os.Getenv("PASSWORDAWS"),
-		os.Getenv("NAME"))
-	  dbAWS, errAWS := sql.Open("postgres", psqlInfoAWS)
+		os.Getenv("NAMEAWS"))
+	dbAWS, errAWS := sql.Open("postgres", psqlInfoAWS)
 
 	if errAWS != nil {
 		return dbAWS, errAWS
@@ -171,30 +181,39 @@ func dbLoginread() (*sql.DB, error) {
 	db, _ := awsLogin()
   err := dbForwarding(db, "AWS_DOWN")
   if err == nil {
+      fmt.Println("reading from AWS")
       return db, err
   }
+  fmt.Println("error reading from AWS")
 
-  //db, _ = gcpLogin()
-  //err = dbForwarding(db, "GCP_DOWN")
+  //uncomment for gcp
+  db, _ = gcpLogin()
+  err = dbForwarding(db, "GCP_DOWN")
+  if err == nil {
+    fmt.Println("reading from GCP")
+  }  else{
+    fmt.Println("error reading from GCP")
+  }
 
   return db, err
 }
 
 func dbLogin() ([]*sql.DB) {
 
-	//dbGCP, _ := gcpLogin()
-  dbAWS, _ := awsLogin()
   var working_dbs []*sql.DB
 
+  dbAWS, _ := awsLogin()
   err := dbForwarding(dbAWS, "AWS_DOWN")
   if err == nil {
     working_dbs = append(working_dbs, dbAWS)
   }
 
-  /*err = dbForwarding(dbGCP, "GCP_DOWN")
+  //uncomment for gcp
+  dbGCP, _ := gcpLogin()
+  err = dbForwarding(dbGCP, "GCP_DOWN")
   if err == nil {
-    working_dbs = append(working_dbs, dbAWS)
-  }*/
+    working_dbs = append(working_dbs, dbGCP)
+  }
 
 	return working_dbs
 }
