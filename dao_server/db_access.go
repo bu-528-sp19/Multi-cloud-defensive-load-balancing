@@ -185,8 +185,9 @@ func dbLoginread() (*sql.DB, error) {
 	err := dbForwarding(db, "AWS_DOWN")
 	if err == nil {
 		fmt.Println("reading from AWS")
+	} else {
+		fmt.Println("error reading from AWS")
 	}
-	fmt.Println("error reading from AWS")
 	return db, err
   } else {
 	//uncomment for gcp
