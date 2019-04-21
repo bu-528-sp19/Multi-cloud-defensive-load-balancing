@@ -10,6 +10,7 @@ import (
   "bytes"
   "os"
   "time"
+  "math/rand"
 )
 
 //lib/pq is the driver for postgres
@@ -178,24 +179,26 @@ func awsLogin() (*sql.DB, error) {
 
 
 func dbLoginread() (*sql.DB, error) {
+  rand := rand.Intn(1)
+   if (rand == 0) {
 	db, _ := awsLogin()
-  err := dbForwarding(db, "AWS_DOWN")
-  if err == nil {
-      fmt.Println("reading from AWS")
-      return db, err
+	err := dbForwarding(db, "AWS_DOWN")
+	if err == nil {
+		fmt.Println("reading from AWS")
+	}
+	fmt.Println("error reading from AWS")
+	return db, err
+  } else {
+	//uncomment for gcp
+	db, _ := gcpLogin()
+	err := dbForwarding(db, "GCP_DOWN")
+	if err == nil {
+		fmt.Println("reading from GCP")
+	} else {
+		fmt.Println("error reading from GCP")
+	}
+	return db, err
   }
-  fmt.Println("error reading from AWS")
-
-  //uncomment for gcp
-  db, _ = gcpLogin()
-  err = dbForwarding(db, "GCP_DOWN")
-  if err == nil {
-    fmt.Println("reading from GCP")
-  }  else{
-    fmt.Println("error reading from GCP")
-  }
-
-  return db, err
 }
 
 func dbLogin() ([]*sql.DB) {
