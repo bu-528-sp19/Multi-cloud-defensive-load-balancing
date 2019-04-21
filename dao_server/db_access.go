@@ -180,7 +180,7 @@ func awsLogin() (*sql.DB, error) {
 
 func dbLoginread() (*sql.DB, error) {
    rand.Seed(time.Now().UTC().UnixNano())
-   rand := rand.Intn(1)
+   rand := rand.Intn(2)
    if (rand == 0) {
 	db, _ := awsLogin()
 	err := dbForwarding(db, "AWS_DOWN")
