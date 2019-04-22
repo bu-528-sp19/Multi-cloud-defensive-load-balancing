@@ -11,7 +11,7 @@ for i in range(NUM_REQUESTS):
    innernow=time.time()
    data = {"UserID": 1, "Model": str(i)}
    json_data = json.dumps(data)
-   r = requests.post('http://35.221.57.208/cars/', json_data)
+   r = requests.post('http://35.245.85.172/cars/', json_data)
    #r = requests.post('http://35.245.114.96:8888/cars/', json_data)
    stat=r.status_code
    innerthen=time.time()

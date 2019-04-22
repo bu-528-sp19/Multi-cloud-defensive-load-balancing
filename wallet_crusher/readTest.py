@@ -6,7 +6,7 @@ start= time.time()
 failed=0
 for i in range(200):
    innernow=time.time()
-   r = requests.get('http://35.221.57.208/users/')
+   r = requests.get('http://35.245.85.172/users/')
    innerthen=time.time()
    stat=r.status_code
    if (stat == 200 and len(r.text) > 0):
