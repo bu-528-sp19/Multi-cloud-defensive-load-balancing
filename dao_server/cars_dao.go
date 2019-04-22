@@ -13,7 +13,6 @@ import (
 const CARS_ROUTE string = "cars/"
 
 func createCar(carObj Car) Car {
-	fmt.Println("Writing to DBs...")
 	//local server
 	/*isLeader := true
 	if isLeader == false { //!s.IsLeader() {
@@ -21,6 +20,7 @@ func createCar(carObj Car) Car {
 
 	//cloud server
 	if !s.IsLeader() {
+		fmt.Println("Forwarding to leader")
 		leaderIP := "http://" + strings.Split(s.GetLeaderAddress(), ":")[0] + ":8888/"
 
 		url := leaderIP + CARS_ROUTE
@@ -34,6 +34,8 @@ func createCar(carObj Car) Car {
 		return carObj
 	}
 
+
+	fmt.Println("Writing to DBs")
 	query := fmt.Sprintf(
 		"INSERT INTO cars (user_id, model) "+
 		"VALUES (%d, '%s') RETURNING id;",
