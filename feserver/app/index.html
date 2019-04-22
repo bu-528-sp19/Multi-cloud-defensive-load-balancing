@@ -1,20 +1,15 @@
 <!DOCTYPE html>
 <html>
 
-
-
 <head>
 	<title>Garage App</title>
 
 </head>
 
-
-
-
-<body>
-	<h1>Cloud Hydra</h1>
-	<strong>Please Enter your user ID:</strong>
-	<div>
+<body background="cloudbg.jpg">
+	<h1 style="color:Dodgerblue;">Cloud Hydra</h1>
+	<strong style="color:red">Please Enter your user ID:</strong>
+	<div>	
        <input type="text" id="EnteredID" placeholder="Type your ID here" required>       
     </div>
 
@@ -53,10 +48,10 @@
 
 	<script>
 		document.getElementById('submit').addEventListener('click', OnClick);
-
 		function OnClick()
 		{
-			const ip = 'http://35.241.8.114:8080/';
+			//const ip = 'http://35.199.49.213:8888/';
+			const ip = 'http://cloud-hydra.com/';
 			if(document.getElementById('actionsel').value == "VIEW" && document.getElementById('whatsel').value=="CARS") //Viewing Cars
 			{
 				
@@ -76,7 +71,6 @@
 			       document.getElementById('output').innerHTML = output;
 			     })
 			}
-
 			if(document.getElementById('actionsel').value == "VIEW" && document.getElementById('whatsel').value=="GARAGE") //Viewing Garages
 			{
 				
@@ -94,7 +88,6 @@
 			       document.getElementById('output').innerHTML = output;
 			     })
 			}
-
 			if(document.getElementById('actionsel').value == "VIEW" && document.getElementById('whatsel').value=="RESERVATION") 
 			{
 				
@@ -113,7 +106,6 @@
 			       document.getElementById('output').innerHTML = output;
 			     })
 			}
-
 			if(document.getElementById('actionsel').value == "ADD" && document.getElementById('whatsel').value=="CARS")
 			{
 				var url = ip+"cars"
@@ -126,8 +118,6 @@
 				.then((res) => res.json())
      			.then((data) => console.log(data))
 			}
-
-
 			if(document.getElementById('actionsel').value == "ADD" && document.getElementById('whatsel').value=="GARAGE")
 			{
 				var url = ip+"garages"
@@ -140,11 +130,7 @@
 				.then((res) => res.json())
      			.then((data) => console.log(data))
 			}
-
 		}
-
-
-
 		function checknewcar(that)
 		{
 			if (document.getElementById('actionsel').value == "ADD" && document.getElementById('whatsel').value=="CARS") 
@@ -155,7 +141,6 @@
 	        {
 	            document.getElementById("addcardiv").style.display = "none";
 	        }
-
 			if (document.getElementById('actionsel').value == "ADD" && document.getElementById('whatsel').value=="GARAGE") 
 			{            
             document.getElementById("addgaragediv").style.display = "block";
@@ -164,9 +149,7 @@
 	        {
 	            document.getElementById("addgaragediv").style.display = "none";
 	        }
-
 		}
-
 	</script>
 
 
