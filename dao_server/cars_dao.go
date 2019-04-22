@@ -13,7 +13,7 @@ import (
 const CARS_ROUTE string = "cars/"
 
 func createCar(carObj Car) Car {
-
+	fmt.Println("Writing to DBs...")
 	//local server
 	/*isLeader := true
 	if isLeader == false { //!s.IsLeader() {
@@ -34,14 +34,6 @@ func createCar(carObj Car) Car {
 		return carObj
 	}
 
-
-	num_dbs := 0
-	dbs := dbLogin()
-	for _, db := range dbs {
-		num_dbs = num_dbs + 1
-		defer  db.Close()
-	}
-
 	query := fmt.Sprintf(
 		"INSERT INTO cars (user_id, model) "+
 		"VALUES (%d, '%s') RETURNING id;",
@@ -50,14 +42,28 @@ func createCar(carObj Car) Car {
 	cur_time := strconv.FormatInt(time.Now().Unix(), 10)
 	s.Set(cur_time, query)
 
+	num_dbs := 0
+	dbs := dbLogin()
+
+	s.Locklog()
+	defer s.Unlocklog()
+
+	for _, db := range dbs {
+		num_dbs = num_dbs + 1
+		defer  db.Close()
+	}
+
 	if num_dbs == 0 {
+		fmt.Println("No DBs found")
 		return carObj
 	}
 
 	//execute queries to all dbs except the last one
 	var i int
 	for i = 0; i < num_dbs - 1; i++ {
-		_, err := dbs[i].Query(query)
+		row, err := dbs[i].Query(query)
+		defer row.Close()
+
 		if err != nil {
 			panic (err)
 		}
@@ -65,14 +71,13 @@ func createCar(carObj Car) Car {
 
 	//only get data from last query
 	row, err := dbs[len(dbs) - 1].Query(query)
-
 	if err != nil {
 		panic (err)
 	}
-
 	row.Next()
 	var newID int
 	scanErr := row.Scan(&newID)
+	defer row.Close()
 
 	if scanErr != nil {
 		panic(scanErr)
@@ -135,6 +140,8 @@ func getCar(carID int) (Car) {
 		var model string
 
 		err = rows.Scan(&id, &user_id, &model)
+		defer rows.Close()
+
 		if err != nil {
 			panic(err)
 		}
@@ -161,6 +168,8 @@ func getCars() ([]Car) {
 		var model string
 
 		err = rows.Scan(&id, &user_id, &model)
+		defer rows.Close()
+
 		if err != nil {
 			panic(err)
 		}

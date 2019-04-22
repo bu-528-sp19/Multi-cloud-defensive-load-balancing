@@ -127,8 +127,8 @@ func (s *Store) Unlocklog() (){
 
 // Get returns the value for the given key.
 func (s *Store) Get(key string) (string, error) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
+//	s.mu.Lock()
+//	defer s.mu.Unlock()
 	return s.m[key], nil
 }
 
