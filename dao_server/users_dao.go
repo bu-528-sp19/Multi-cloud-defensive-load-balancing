@@ -125,7 +125,7 @@ func getUsers() ([]User) {
 	}
 
 	rows, err := db.Query("SELECT * FROM users")
-
+	defer rows.Close()
 	for rows.Next() {
 		var id int
 		var db_username string

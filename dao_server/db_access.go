@@ -10,6 +10,7 @@ import (
   "bytes"
   "os"
   "time"
+  "math/rand"
 )
 
 //lib/pq is the driver for postgres
@@ -99,34 +100,34 @@ func dbForwarding(db *sql.DB, db_name string) (error){
     //cloud server
     isLeader := s.IsLeader()
 
-    if len(s.GetAll()) == 0 {
-  		s.Set("AWS_DOWN", "0")
-      s.Set("GCP_DOWN", "0")
-  	}
+	if len(s.GetAll()) == 0 {
+		s.Set("AWS_DOWN", "0")
+		s.Set("GCP_DOWN", "0")
+	}
 
-  	err := db.Ping()
-  	if err != nil {
-  		aws_status, _ := s.Get(db_name)
-  		if aws_status == "0" {
-        cur_time := strconv.FormatInt(time.Now().Unix(), 10)
-  			if isLeader != true {
-  				notify_leader(db_name, cur_time)
-  			} else{
-  				s.Set(db_name, cur_time)
-  			}
-  		}
-  	} else{
-  			down_time, _ := s.Get(db_name)
-  			if down_time != "0" {
-  				if isLeader != true {
-  					notify_leader("db_name", "0")
-  				} else{
-  					s.Set(db_name, "0")
-  				}
-  				db_recover(db, down_time, db_name)
-  			}
+	err := db.Ping()
+	if err != nil {
+		aws_status, _ := s.Get(db_name)
+		if aws_status == "0" {
+		        cur_time := strconv.FormatInt(time.Now().Unix(), 10)
+			if isLeader != true {
+				notify_leader(db_name, cur_time)
+			} else{
+				s.Set(db_name, cur_time)
+			}
+		}
+	} else {
+		down_time, _ := s.Get(db_name)
+		if down_time != "0" {
+			if isLeader != true {
+				notify_leader("db_name", "0")
+			} else {
+				s.Set(db_name, "0")
+			}
+				db_recover(db, down_time, db_name)
+		}
         //db_recover(db, down_time) //for debugging
-  	}
+	}
     return err
 }
 ///////////////////////////////////////////////////
@@ -142,14 +143,14 @@ func gcpLogin() (*sql.DB, error) {
 		os.Getenv("NAMEGCP"))
 	db, err := sql.Open("postgres", psqlInfo)
 
-	if err != nil {
-		return db, err
-	}
+//	if err != nil {
+//		return db, err
+//	}
 
-	err = db.Ping()
+	/*err = db.Ping()
 	if err != nil {
 		return db, err
-	}
+	}*/
 	return db, err
 }
 
@@ -164,53 +165,57 @@ func awsLogin() (*sql.DB, error) {
 		os.Getenv("NAMEAWS"))
 	dbAWS, errAWS := sql.Open("postgres", psqlInfoAWS)
 
-	if errAWS != nil {
-		return dbAWS, errAWS
-	}
+//	if errAWS != nil {
+//		return dbAWS, errAWS
+//	}
 
-	errAWS = dbAWS.Ping()
+	/*errAWS = dbAWS.Ping()
 	if errAWS != nil {
 		return dbAWS, errAWS
-	}
+	}*/
 
 	return dbAWS, errAWS
 }
 
 
 func dbLoginread() (*sql.DB, error) {
+   rand.Seed(time.Now().UTC().UnixNano())
+   rand := rand.Intn(2)
+   if (rand == 0) {
 	db, _ := awsLogin()
-  err := dbForwarding(db, "AWS_DOWN")
-  if err == nil {
-      fmt.Println("reading from AWS")
-      return db, err
+	err := dbForwarding(db, "AWS_DOWN")
+	if err == nil {
+		fmt.Println("reading from AWS")
+	} else {
+		fmt.Println("error reading from AWS")
+	}
+	return db, err
+  } else {
+	//uncomment for gcp
+	db, _ := gcpLogin()
+	err := dbForwarding(db, "GCP_DOWN")
+	if err == nil {
+		fmt.Println("reading from GCP")
+	} else {
+		fmt.Println("error reading from GCP")
+	}
+	return db, err
   }
-  fmt.Println("error reading from AWS")
-
-  //uncomment for gcp
-  db, _ = gcpLogin()
-  err = dbForwarding(db, "GCP_DOWN")
-  if err == nil {
-    fmt.Println("reading from GCP")
-  }  else{
-    fmt.Println("error reading from GCP")
-  }
-
-  return db, err
 }
 
 func dbLogin() ([]*sql.DB) {
 
   var working_dbs []*sql.DB
 
-  dbAWS, _ := awsLogin()
-  err := dbForwarding(dbAWS, "AWS_DOWN")
+  dbAWS, err := awsLogin()
+//  err = dbForwarding(dbAWS, "AWS_DOWN")
   if err == nil {
     working_dbs = append(working_dbs, dbAWS)
   }
 
   //uncomment for gcp
   dbGCP, _ := gcpLogin()
-  err = dbForwarding(dbGCP, "GCP_DOWN")
+  //err = dbForwarding(dbGCP, "GCP_DOWN")
   if err == nil {
     working_dbs = append(working_dbs, dbGCP)
   }

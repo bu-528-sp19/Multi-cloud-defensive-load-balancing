@@ -23,7 +23,6 @@ func GetCar(w http.ResponseWriter, req *http.Request) {
 		json.NewEncoder(w).Encode(car)
 		return
 	}
-	json.NewEncoder(w).Encode(&Car{})
 }
 
 func GetCars(w http.ResponseWriter, req *http.Request) {
@@ -46,5 +45,9 @@ func CreateCar(w http.ResponseWriter, req *http.Request) {
 	var car Car
 	_ = json.NewDecoder(req.Body).Decode(&car)
 	car = createCar(car)
+	if car.ID == 0 {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("Write failed"))
+	}
 	json.NewEncoder(w).Encode(car)
 }
