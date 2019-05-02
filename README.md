@@ -101,11 +101,29 @@ Sprint 1:
   * Ensure the web app can serve static content
   * Ensure the web app can serve dynamic content and have will CRUD functionality as described by the mentor (garage reservation system with users and cars)
 
-Product Backlog:
-* Separate the front end to be served by a CDN
-* Extract the request handling to Request Servers that will load balance requests to the webserver(s) and track their statuses (per cloud)
-* Create a DNS name for the primary request server and route CDN traffic to it
-* Connect the Request Servers together and implement cross-cloud load balancing and health checks
-* Implement DNS failover on the secondary Request Server to redirect DNS servers to it instead
-* Extract the database access layer into a separate Database Access Server
-* Connect Database Access Servers together and implement distributed reads and writes
+Sprint 2:
+* Create a layer on top of the DBs to abstract away the DBs themselves so that the application layer doesn't need to worry about whether or not databases are up
+* The machines of the data layer will coordinate via Raft to determine the global ordering of writes
+* Reads can be serviced by any node
+* Cluster will start out in a single cloud environment
+
+Sprint 3:
+* The point of entry to the data layer will be a load balancer that round robins the requests to the underlying nodes
+* If a write arrives to a non-leader node, have the node forward the request to the leader for processing
+* The cluster will deal with the fact that nodes can be located in any cloud (but will bootstrap with a known leader)
+* Single Cloud DB recovery, if the cluster detects that a DB is down, it will log the time and forward all missed requests when the DB comes back up
+
+Sprint 4:
+* Clean slate DBs in GCP and AWS to test the system at a full capacity
+* Enable multi-cloud DB recovery and ensure that the leader can respond correctly even if relocated to a different cloud
+* Make sure the cluster does not collapse when a new leader is chosen in a different cloud (longer network latency)
+* DNS ANAME Rotation
+
+Sprint 5:
+* Hook up everything together in both clouds
+* Test the entire system via hitting the front end and seeing requests snaked through to the data layer
+* Test ANAME rotation
+* Perform stress tests and gather metrics
+
+
+
