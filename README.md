@@ -162,35 +162,49 @@ To install the application servers:
 sudo docker container run -d -e IP=<IP of Load Balancer in front of data layer> -p 80:8888 cloudhydra/appserver:1.2
 ```
 
-To install the ngxinx load balancers:
+Creating a Load balancer for the app or data layer:
 
-```
-mkdir ngxinx
-cd ngxinx
-touch default.conf
-touch Dockerfile
-```
+- Set up an Ubuntu machine or GCP or AWS
+- Install Docker: https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-18-04
+- create a directory called nginx 
+- put into the nginx directory two files: default.conf and Dockerfile
 
-In default.conf, insert the following code, with the IP address replaced with the IPs of the servers that it needs to load balance:
-
-```
-upstream dao_server {
-       server 10.150.0.3:8888;
-       server 10.150.0.6:8888;
-       server 10.150.0.7:8888;
-}
-server {
-      listen 80;
-      location / {
-              proxy_pass http://dao_server;
-      }
-}
-```
-
-In Dockerfile, insert the following code:
-
+Put the following into the Dockerfile:
 ```
 FROM nginx
 EXPOSE 80
 COPY ./default.conf /etc/nginx/conf.d/default.conf
 ```
+
+Put the following into the nginx file:
+
+```
+upstream <<anything>>{
+      server <<IP OF DAO OR APP LAYER MACHINE>>:<< port  80 for app and dao is 8888>>;
+      server <<IP OF DAO OR APP LAYER MACHINE>>:<< port  80 for app and dao is 8888>>;
+      server <<IP OF DAO OR APP LAYER MACHINE>>:<< port  80 for app and dao is 8888>>;
+}
+server {
+     listen 80;
+     location / {
+             proxy_pass http://<<same anything as above>>;
+     }
+}
+```
+Run ```docker build -t cloudhydra-loadbalancer .```
+After it gets build just run ```docker run -d -p 80:80 cloudhydra-loadbalancer```
+Now your load balancer should be running as a daemon background process. 
+
+
+
+Setting up Front End server 
+- Set up an Ubuntu machine or GCP or AWS
+- Install Docker: https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-18-04
+- Run the following command: sudo docker container run -d -p 80:80 cloudhydra/lbfeserver:1.2
+
+
+
+Adding Cloud CDN to the feserver:
+- Now instead of just a single VM, we’ll need a managed instance group (GCP) or an auto scaling group on AWS
+- Let’s take GCP: create a managed instance group with the instance template using the following container image as the instance template: cloudhydra/lbfeserver:1.2
+- Create a default load balancer that is solely used for this MIG, and enable Cloud CDN on it 
