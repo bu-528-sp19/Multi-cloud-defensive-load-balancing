@@ -2,7 +2,7 @@
 
 ** **
 
-## Youtube Link: https://www.youtube.com/watch?v=xiA2H8Ebstg&feature=youtu.be
+### Youtube Link: https://www.youtube.com/watch?v=xiA2H8Ebstg&feature=youtu.be
 
 ## 1.   Vision and Goals Of The Project:
 
@@ -54,15 +54,20 @@ We first built a fullstack web application on both AWS and GCP so that we can te
 
 ### Data Layer
 
-To use multiple database services across many clouds, Hydra also features a distributed database access layer that ensures consistency across all DBs. Hydra's aim is to ensure consistency and availability (and not necessarily partitioning), so writes are distributed across all DBs. There sits a cluster of database access servers (DAS) in all clouds that sits in between the webserver and the database service. Requests to writes will be written to all databases, while read requests can make use of any avaibale database. For example, if the AWS side of the system receives a request to read from the DB, and AWS RDS is up, it will simply read from RDS. If RDS is down, however, the AWS DAS will request a read from the GCP DAS and information will be retrieved from CloudSQL and forwarded to AWS. Any writes during this time will be queued by the AWS DAS for pushing when RDS comes back up.
+To use multiple database services across many clouds, Hydra also features a distributed database access layer that ensures consistency across all DBs. Hydra's aim is to ensure consistency and availability (and not necessarily partitioning), so writes are distributed across all DBs. There sits a cluster of database access servers (DAS) in all clouds that sits in between the webserver and the database service. Within each cluster we perform consensus on all writes using the Raft protocol. For this we use an open source implementation, courtesy of Hashicorp Raft. As part of the Raft algorithm, each node stores consensus information. Raft also features a leader to execute decisions for the cluster. If the leader goes down, another is elected. For each write that enters the data layer, it is forwarded to the leader and then written to all databases. This is because according to the Raft protocol, only the leader can propose changes to the Raft cluster. Read requests, on the other hand, can be executed by any node in the Raft cluster an can make use of any available database. For example, if the AWS side of the system receives a request to read from the DB, and AWS RDS is up, it will simply read from RDS. If RDS is down, however, the AWS DAS will request a read from the GCP DAS and information will be retrieved from CloudSQL and forwarded to AWS.
 
-### Compute Layer
+In our data layer, we lazily check the state of our databases at the point of every transaction. So if a database goes down, or if a database that was down comes back to life, on the next transaction our data servers will be detect this and take action. Because the data in our raft log is timestamped, and because store in our raft log the time at which we detect a database state change, we can use our raft log to help recover the database. This also requires us to make changes to our raft log, so if a non-leader node every detects a state change, it will have to notify the leader to update the db state in the raft log.
 
-Hydra will feature a request server layer in each cloud that will receive incoming requests and round robin load balance them to hosts per Cloud. The Request Server layers in each Cloud will be heartbeating between each other to ensure uptime and analyze load. In a two Request Server architecture, one will be marked as primary and will forward every other request to the secondary Request Server (e.g GCP forwards every other request to AWS). In the event that a secondary server goes down, the primary Request Server will remove it's eligibility in the round robin scheme until it can re-establish contact. If the primary Request Server goes down, the secondary servers will be notified via unresponsive heartbeat. They will elect a new primary Request Server via a simple leadership election algorithm any-cast. The new primary Request Server will then change DNS records to point to domain to itself. In the event that a priority is provided to the framework to prefer a certain Cloud over another (one may be cheaper, etc), the leadership election algorithm will introduce bias when generating the random IDs.
 
-### Load Balancers
+### Application Layer
+
+Hydra also feature an application layer in each cloud consisting of a cluster of request servers. These servers receive incoming requests, perform stateless business logic, and eventually forward the request to the load balancer interfacing the data layer. One of the benefits of having an nginx server between the application and data layers is that it not only round robin load balances requests to different data servers, but it acts as a single endpoint for the application servers to hit. Because the application layer is stateless and does not require consensus, it can be scaled up and down as much and as fast as necessary. As long as one application server is up, the system will be alive and running.
+
 
 ### Front-End Layer
+
+In the front end, we have CDNs set up in both clouds serving our front-end code to clients. By having the CDN endpoints map to multiple IPs, each for a different cloud, we can load balance client requests to either cloud. These IPs served by the CDN map directly to our application layer. This means that when you put app.cloud-hydra.com into your browser, that request is going to DNS and getting mapped to an IP. DNS typically maps one domain name to one IP, but we’ve mapped multiple IPs to app.cloud-hydra using ANAME rotation. The DNS will alternate serving front-end code from each cloud using round-robin, and whatever cloud it gets from the front-end, that cloud will then get hit by the front-end code.
+
 
 Design Implications and Discussion:
 
