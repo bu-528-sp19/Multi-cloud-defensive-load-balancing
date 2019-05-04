@@ -2,9 +2,11 @@
 
 ** **
 
+## Youtube Link: https://www.youtube.com/watch?v=xiA2H8Ebstg&feature=youtu.be
+
 ## 1.   Vision and Goals Of The Project:
 
- Hydra will be a framework for applications in the cloud to mitigate DDoS attacks and provider outages by providing resiliency at multiple levels both intra- and inter-clouds. Intra-cloud resiliency is a topic that has been studied and practiced in depth, making it possible for pieces of applications to migrate from one server to another. Intra-cloud reliability platforms, however, are not nearly as common. We seek to include this in order to protect applications from several issues ranging from cyber attacks to hardware failures. For example, if parts of AWS or GCP go down, for example, the application itself should be alive and kicking, as resources will be directed to the provider that is still up. We seek to implement load balancing at both the intra- and inter-cloud levels so that all requests are serviced, as well as duplicate data throughout different cloud providers in order to ensure that application users always have access to their current data. We will test our framework with our own application by running it on multiple cloud providers and testing its reliability when different cloud instances are turned off.
+ Cloud-Hydra is a framework for cloud applications to mitigate provider outages by providing resiliency at both the both intra- and inter-cloud levels. Intra-cloud resiliency is a topic that has been studied and practiced in depth, making it possible for pieces of applications to migrate from one server to another. Intra-cloud reliability platforms, however, are not nearly as common. We have included this in order to protect applications from several issues ranging from cyber attacks to hardware failures. If parts of AWS or GCP go down, for example, the application itself should be alive and kicking, as resources will be directed to the provider that is still up. We have implemented load balancing at both the intra- and inter-cloud levels so that all requests are serviced, as well as duplicated data throughout different cloud providers in order to ensure that application users always have access to their current data. We have tested our framework with our own application by running it on multiple cloud providers and testing its reliability when different cloud instances are turned off.
 
 ** **
 
@@ -23,16 +25,18 @@
 
 ## 3.   Scope and Features Of The Project:
 
-*Hydra will feature:*
+*Hydra features:*
 
-- Request-level load balancing and queueing between hosts across clouds.
+- Request-level load balancing and queuing between hosts across clouds.
 - If the compute layer of one cloud provider goes down, the application should still function.
 - Distributed writes to all database solutions.
 - Ability to read from any healthy database server.
 - Eventual consistency of newly spawned databases via replication.
 - If the database layer of one cloud provider goes down, the application should still function.
+- DNS failover so that front-end can always be served
+- Resistance to & recovery from database outages
 
-*Hydra will not feature:*
+*Hydra does not feature:*
 
 - More efficient use of compute resources, as many of the servers will be heartbeating and anycasting between each other to track uptime and distribute data.
 - Full disaster recovery
@@ -41,19 +45,24 @@
 
 ** **
 
-## 4. Solution Concept
+## 4. Design and Implementation
 
 ![alt text](https://raw.githubusercontent.com/bu-528-sp19/Multi-cloud-defensive-load-balancing/development/528Architecture.png)
 
-Hydra will provide resiliency at multiple levels.
+We first built a fullstack web application on both AWS and GCP so that we can test our solution. We setup the entire stack, from cloud CDNs, compute VMs, and databases and connected them together. On AWS, we use EC2 instances for our application and data golang servers, and while using Compute Engine in the Google cloud. The application layer, front-end, and load balancers all use docker contains. For our postgres databases, we use AWS RDS and Google Cloud SQL.
 
-### Compute
+
+### Data Layer
+
+To use multiple database services across many clouds, Hydra also features a distributed database access layer that ensures consistency across all DBs. Hydra's aim is to ensure consistency and availability (and not necessarily partitioning), so writes are distributed across all DBs. There sits a cluster of database access servers (DAS) in all clouds that sits in between the webserver and the database service. Requests to writes will be written to all databases, while read requests can make use of any avaibale database. For example, if the AWS side of the system receives a request to read from the DB, and AWS RDS is up, it will simply read from RDS. If RDS is down, however, the AWS DAS will request a read from the GCP DAS and information will be retrieved from CloudSQL and forwarded to AWS. Any writes during this time will be queued by the AWS DAS for pushing when RDS comes back up.
+
+### Compute Layer
 
 Hydra will feature a request server layer in each cloud that will receive incoming requests and round robin load balance them to hosts per Cloud. The Request Server layers in each Cloud will be heartbeating between each other to ensure uptime and analyze load. In a two Request Server architecture, one will be marked as primary and will forward every other request to the secondary Request Server (e.g GCP forwards every other request to AWS). In the event that a secondary server goes down, the primary Request Server will remove it's eligibility in the round robin scheme until it can re-establish contact. If the primary Request Server goes down, the secondary servers will be notified via unresponsive heartbeat. They will elect a new primary Request Server via a simple leadership election algorithm any-cast. The new primary Request Server will then change DNS records to point to domain to itself. In the event that a priority is provided to the framework to prefer a certain Cloud over another (one may be cheaper, etc), the leadership election algorithm will introduce bias when generating the random IDs.
 
-### Data
+### Load Balancers
 
-To use multiple database services across many clouds, Hydra will also feature a distributed database access layer that will ensure consistency across all DBs. Hydra's aim is to ensure consistency and availability (and not necessarily partitioning), so writes will be distributed across all DBs. There will be a database access server (DAS) in all clouds that sits in between the webserver and the database service. Requests to write will pass through the DAS which connects to the DB service and execute the write. All DASs will be connected in this architecture, so write requests that a single DAS receives will be forwarded to every other DAS in the system, so that one write in one system fans out to a write in every system. Similarly, reads will be sourced from any system that is up, optimized for spacial locality. For example, if the AWS side of the system receives a request to read from the DB, and AWS RDS is up, it will simply read from RDS. If RDS is down, however, the AWS DAS will request a read from the GCP DAS and information will be retrieved from CloudSQL and forwarded to AWS. Any writes during this time will be queued by the AWS DAS for pushing when RDS comes back up.
+### Front-End Layer
 
 Design Implications and Discussion:
 
@@ -71,24 +80,24 @@ Design Implications and Discussion:
 
 MVP (not in any particular order):
 
-1) Basic CRUD web app that, by nature, will exercise DB reads, writes, and possible concurrency issues as a base to apply resiliency strategies to
-2) Request load balancing between clouds
-3) Host level load balancing within clouds
-4) Turning off host instances should not crash the application for an extended period of time
-5) DNS failover in the event that the main server goes down
-6) Turning off all compute instances of a Cloud should not kill the application
-7) 1 Request server per Cloud
-8) Two clouds / at least two isolated systems
+1) Basic CRUD web app that, by nature, will exercise DB reads, writes, and possible concurrency issues as a base to apply resiliency strategies to - COMPLETED
+2) Request load balancing between clouds - COMPLETED
+3) Host level load balancing within clouds - COMPLETED
+4) Turning off host instances should not crash the application for an extended period of time - COMPLETED
+5) DNS failover in the event that the main server goes down - COMPLETED
+6) Turning off all compute instances of a Cloud should not kill the application - COMPLETED
+7) 1 Request server per Cloud - COMPLETED
+8) Two clouds / at least two isolated systems - COMPLETED
 
 Stretch (also not in any particular order):
 
-1) Multiple Request Servers and leadership election
-2) Distributed DB writes
-3) Distributed reads from any healthy database
-4) Eventual consistency of new and recovered databases via replication and write queuing
-5) Turning off database instances should not break the application
-6) Multiple Request servers per Cloud
-7) More than two clouds
+1) Multiple Request Servers and leadership election - COMPLETED
+2) Distributed DB writes - COMPLETED
+3) Distributed reads from any healthy database - COMPLETED
+4) Eventual consistency of new and recovered databases via replication and write queuing - INCOMPLETE
+5) Turning off database instances should not break the application - COMPLETED
+6) Multiple Request servers per Cloud - COMPLETED
+7) More than two clouds - INCOMPLETE
 
 ** **
 
@@ -126,4 +135,4 @@ Sprint 5:
 * Perform stress tests and gather metrics
 
 
-
+## 7. Installing and Deploying
