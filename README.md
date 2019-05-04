@@ -81,7 +81,7 @@ Design Implications and Discussion:
 
 ** **
 
-## 5. Acceptance criteria
+## 5. Evaluation of Goals Met
 
 MVP (not in any particular order):
 
@@ -94,7 +94,7 @@ MVP (not in any particular order):
 7) 1 Request server per Cloud - COMPLETED
 8) Two clouds / at least two isolated systems - COMPLETED
 
-Stretch (also not in any particular order):
+Stretch Goals (also not in any particular order):
 
 1) Multiple Request Servers and leadership election - COMPLETED
 2) Distributed DB writes - COMPLETED
@@ -141,3 +141,56 @@ Sprint 5:
 
 
 ## 7. Installing and Deploying
+These steps assume that you have already deployed the necessary infrastructure in AWS and GCP. The technology stack used is these clouds was mentioned above.
+
+To install the data servers:
+
+```
+cd dao_server
+```
+
+In dao_startup.sh, fill in all the environment variables. This means filling in the IP address of the databases, as well as their usernames and passwords. For the raft variables, if the node you are deploying is the first node in the cluster, set its LEADER variable to true. Raft node id can be any unique integer. For EXTERNAL_IP_QUERY, you must fill it with a command that returns the nodes external IP. This is different for every cloud provider. Once this is done, call:
+
+```
+source dao_startup.sh
+go run *.go
+```
+
+To install the application servers:
+
+```
+sudo docker container run -d -e IP=<IP of Load Balancer in front of data layer> -p 80:8888 cloudhydra/appserver:1.2
+```
+
+To install the ngxinx load balancers:
+
+```
+mkdir ngxinx
+cd ngxinx
+touch default.conf
+touch Dockerfile
+```
+
+In default.conf, insert the following code, with the IP address replaced with the IPs of the servers that it needs to load balance:
+
+```
+upstream dao_server {
+       server 10.150.0.3:8888;
+       server 10.150.0.6:8888;
+       server 10.150.0.7:8888;
+}
+server {
+      listen 80;
+      location / {
+              proxy_pass http://dao_server;
+      }
+}
+```
+
+In Dockerfile, insert the following code:
+
+```
+FROM nginx
+EXPOSE 80
+COPY ./default.conf /etc/nginx/conf.d/default.conf
+```
