@@ -100,7 +100,7 @@ func dbForwarding(db *sql.DB, db_name string) (error){
     //cloud server
     isLeader := s.IsLeader()
 
-	if len(s.GetAll()) == 0 {
+	if (isLeader && len(s.GetAll())) == 0 {
 		s.Set("AWS_DOWN", "0")
 		s.Set("GCP_DOWN", "0")
 	}
@@ -120,7 +120,7 @@ func dbForwarding(db *sql.DB, db_name string) (error){
 		down_time, _ := s.Get(db_name)
 		if down_time != "0" {
 			if isLeader != true {
-				notify_leader("db_name", "0")
+				notify_leader(db_name, "0")
 			} else {
 				s.Set(db_name, "0")
 			}
@@ -186,11 +186,12 @@ func dbLoginread() (*sql.DB, error) {
 	err := dbForwarding(db, "AWS_DOWN")
 	if err == nil {
 		fmt.Println("reading from AWS")
+    return db, err
 	} else {
 		fmt.Println("error reading from AWS")
 	}
-	return db, err
-  } else {
+
+  }// else {
 	//uncomment for gcp
 	db, _ := gcpLogin()
 	err := dbForwarding(db, "GCP_DOWN")
@@ -200,7 +201,7 @@ func dbLoginread() (*sql.DB, error) {
 		fmt.Println("error reading from GCP")
 	}
 	return db, err
-  }
+  //}
 }
 
 func dbLogin() ([]*sql.DB) {
