@@ -209,6 +209,6 @@ Adding Cloud CDN to the feserver:
 - Let’s take GCP: create a managed instance group with the instance template using the following container image as the instance template: cloudhydra/lbfeserver:1.2
 - Create a default load balancer that's solely used for this MIG, and enable Cloud CDN on it
 
-Josh Stern
-Josh Stern
-Josh Stern
+Boston University
+Boston University
+Boston University
