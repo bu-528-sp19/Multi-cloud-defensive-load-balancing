@@ -166,7 +166,7 @@ Creating a Load balancer for the app or data layer:
 
 - Set up an Ubuntu machine or GCP or AWS
 - Install Docker: https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-18-04
-- create a directory called nginx 
+- create a directory called nginx
 - put into the nginx directory two files: default.conf and Dockerfile
 
 Put the following into the Dockerfile:
@@ -193,11 +193,11 @@ server {
 ```
 Run ```docker build -t cloudhydra-loadbalancer .```
 After it gets build just run ```docker run -d -p 80:80 cloudhydra-loadbalancer```
-Now your load balancer should be running as a daemon background process. 
+Now your load balancer should be running as a daemon background process.
 
 
 
-Setting up Front End server 
+Setting up Front End server
 - Set up an Ubuntu machine or GCP or AWS
 - Install Docker: https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-18-04
 - Run the following command: sudo docker container run -d -p 80:80 cloudhydra/lbfeserver:1.2
@@ -207,4 +207,7 @@ Setting up Front End server
 Adding Cloud CDN to the feserver:
 - Now instead of just a single VM, we’ll need a managed instance group (GCP) or an auto scaling group on AWS
 - Let’s take GCP: create a managed instance group with the instance template using the following container image as the instance template: cloudhydra/lbfeserver:1.2
-- Create a default load balancer that is solely used for this MIG, and enable Cloud CDN on it 
+- Create a default load balancer that's solely used for this MIG, and enable Cloud CDN on it
+
+Josh Stern
+Josh Stern is alive
