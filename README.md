@@ -208,3 +208,5 @@ Adding Cloud CDN to the feserver:
 - Now instead of just a single VM, we’ll need a managed instance group (GCP) or an auto scaling group on AWS
 - Let’s take GCP: create a managed instance group with the instance template using the following container image as the instance template: cloudhydra/lbfeserver:1.2
 - Create a default load balancer that's solely used for this MIG, and enable Cloud CDN on it 
+
+Josh Stern
